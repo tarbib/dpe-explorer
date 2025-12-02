@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DPE Explorer</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            min-height: 100vh;
+        }
+
+        header {
+            background: white;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo {
+            width: 28px;
+            height: 28px;
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 12px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            font-size: 16px;
+            margin-bottom: 32px;
+        }
+
+        .filters-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .filter-hint {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 4px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"] {
+            padding: 10px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #1e293b;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #3b82f6;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            font-size: 14px;
+            color: #374151;
+            cursor: pointer;
+        }
+
+        .filters-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .search-btn-container {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .search-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .search-btn:hover {
+            background: #2563eb;
+        }
+
+        .search-btn:disabled {
+            background: #93c5fd;
+            cursor: not-allowed;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: color 0.2s, border-color 0.2s;
+        }
+
+        .tab:hover {
+            color: #3b82f6;
+        }
+
+        .tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+
+        .results-container {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            min-height: 400px;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px;
+            text-align: center;
+        }
+
+        .empty-icon {
+            width: 48px;
+            height: 48px;
+            color: #cbd5e1;
+            margin-bottom: 16px;
+        }
+
+        .empty-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .empty-text {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .results-list {
+            padding: 0;
+        }
+
+        .result-item {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .dpe-badges {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dpe-badge {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .dpe-badge.energy {
+            position: relative;
+        }
+
+        .dpe-badge.ges {
+            position: relative;
+        }
+
+        .badge-label {
+            position: absolute;
+            bottom: -18px;
+            font-size: 10px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .dpe-A { background: #319834; }
+        .dpe-B { background: #33cc31; }
+        .dpe-C { background: #cbfc34; color: #1e293b; }
+        .dpe-D { background: #fbfe06; color: #1e293b; }
+        .dpe-E { background: #fbcc04; color: #1e293b; }
+        .dpe-F { background: #f68e1e; }
+        .dpe-G { background: #ef1d26; }
+
+        .result-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .result-address {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .result-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .result-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .result-details {
+            text-align: right;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .result-date {
+            font-weight: 500;
+            color: #1e293b;
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 16px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .results-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .results-count {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .results-count strong {
+            color: #1e293b;
+        }
+
+        #map-container {
+            height: 500px;
+            display: none;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+            border-radius: 12px;
+        }
+
+        .map-popup {
+            font-size: 13px;
+        }
+
+        .map-popup strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        @media (max-width: 1024px) {
+            .filters-grid,
+            .filters-row-2 {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .filters-grid,
+            .filters-row-2 {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .result-item {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .result-details {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <svg class="logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C9.5 2 7.5 4 7.5 6.5C7.5 8.5 8.5 10.5 10 13C10.5 14 11 15 11 16C11 18 9 20 9 22H15C15 20 13 18 13 16C13 15 13.5 14 14 13C15.5 10.5 16.5 8.5 16.5 6.5C16.5 4 14.5 2 12 2Z" fill="#3b82f6"/>
+        </svg>
+        <span class="logo-text">DPE Explorer</span>
+    </header>
+
+    <main>
+        <h1>French Energy Performance Certificate Explorer</h1>
+        <p class="subtitle">Browse and filter DPE results from the official ADEME database.</p>
+
+        <div class="filters-card">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">Postal Codes</label>
+                    <input type="text" id="postalCodes" placeholder="44600">
+                    <span class="filter-hint">Comma or space-separated list.</span>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Building Types</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="typeAppartement" value="appartement">
+                            <label for="typeAppartement">Appartement</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="typeMaison" value="maison">
+                            <label for="typeMaison">Maison</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="typeImmeuble" value="immeuble">
+                            <label for="typeImmeuble">Immeuble</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">DPE Grades</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="gradeA" value="A">
+                            <label for="gradeA">A</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="gradeB" value="B">
+                            <label for="gradeB">B</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="gradeC" value="C">
+                            <label for="gradeC">C</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="gradeD" value="D">
+                            <label for="gradeD">D</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="gradeE" value="E">
+                            <label for="gradeE">E</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="gradeF" value="F">
+                            <label for="gradeF">F</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="gradeG" value="G">
+                            <label for="gradeG">G</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Start Date</label>
+                    <input type="date" id="startDate">
+                </div>
+            </div>
+
+            <div class="filters-row-2">
+                <div class="filter-group">
+                    <label class="filter-label">End Date</label>
+                    <input type="date" id="endDate">
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Min Surface (m2)</label>
+                    <input type="number" id="minSurface" placeholder="Min">
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Max Surface (m2)</label>
+                    <input type="number" id="maxSurface" placeholder="Max">
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Results Size</label>
+                    <input type="number" id="resultsSize" value="100">
+                </div>
+            </div>
+
+            <div class="search-btn-container">
+                <button class="search-btn" id="searchBtn" onclick="performSearch()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="M21 21l-4.35-4.35"></path>
+                    </svg>
+                    Search
+                </button>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('list')">List View</button>
+            <button class="tab" onclick="switchTab('map')">Map View</button>
+        </div>
+
+        <div class="results-container" id="resultsContainer">
+            <div class="empty-state" id="emptyState">
+                <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="M21 21l-4.35-4.35"></path>
+                </svg>
+                <h3 class="empty-title">Start Your Search</h3>
+                <p class="empty-text">Use the filters above to find French Energy<br>Performance Certificates.</p>
+            </div>
+            <div class="loading" id="loadingState" style="display: none;">
+                <div class="spinner"></div>
+                <p class="loading-text">Loading results...</p>
+            </div>
+            <div id="resultsList" style="display: none;"></div>
+            <div id="map-container">
+                <div id="map"></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let results = [];
+        let map = null;
+        let markers = [];
+        let currentView = 'list';
+
+        function getSelectedValues(prefix, values) {
+            return values.filter(v => document.getElementById(prefix + v)?.checked);
+        }
+
+        function buildApiUrl() {
+            const baseUrl = 'https://data.ademe.fr/data-fair/api/v1/datasets/dpe03existant/lines';
+            const params = new URLSearchParams();
+
+            const postalCodes = document.getElementById('postalCodes').value.trim();
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const minSurface = document.getElementById('minSurface').value;
+            const maxSurface = document.getElementById('maxSurface').value;
+            const resultsSize = document.getElementById('resultsSize').value || 100;
+
+            const buildingTypes = getSelectedValues('type', ['Appartement', 'Maison', 'Immeuble'])
+                .map(t => t.toLowerCase());
+            const dpeGrades = getSelectedValues('grade', ['A', 'B', 'C', 'D', 'E', 'F', 'G']);
+
+            params.append('size', resultsSize);
+
+            const qsConditions = [];
+
+            if (postalCodes) {
+                const codes = postalCodes.split(/[\s,]+/).filter(c => c);
+                if (codes.length > 0) {
+                    const codeConditions = codes.map(c => `code_postal_brut:${c}`).join(' OR ');
+                    qsConditions.push(`(${codeConditions})`);
+                }
+            }
+
+            if (buildingTypes.length > 0) {
+                const typeConditions = buildingTypes.map(t => `type_batiment:${t}`).join(' OR ');
+                qsConditions.push(`(${typeConditions})`);
+            }
+
+            if (dpeGrades.length > 0) {
+                const gradeConditions = dpeGrades.map(g => `etiquette_dpe:${g}`).join(' OR ');
+                qsConditions.push(`(${gradeConditions})`);
+            }
+
+            if (qsConditions.length > 0) {
+                params.append('qs', qsConditions.join(' AND '));
+            }
+
+            const selectFields = [
+                'adresse_ban', 'code_postal_ban', 'nom_commune_ban',
+                'etiquette_dpe', 'etiquette_ges', 'type_batiment',
+                'surface_habitable_logement', 'annee_construction',
+                'date_etablissement_dpe', 'conso_5_usages_par_m2_ep',
+                'emission_ges_5_usages_par_m2', '_geopoint', 'numero_dpe'
+            ];
+            params.append('select', selectFields.join(','));
+
+            if (startDate) {
+                params.append('date_etablissement_dpe_gte', startDate);
+            }
+            if (endDate) {
+                params.append('date_etablissement_dpe_lte', endDate);
+            }
+            if (minSurface) {
+                params.append('surface_habitable_logement_gte', minSurface);
+            }
+            if (maxSurface) {
+                params.append('surface_habitable_logement_lte', maxSurface);
+            }
+
+            return `${baseUrl}?${params.toString()}`;
+        }
+
+        async function performSearch() {
+            const searchBtn = document.getElementById('searchBtn');
+            const emptyState = document.getElementById('emptyState');
+            const loadingState = document.getElementById('loadingState');
+            const resultsList = document.getElementById('resultsList');
+
+            searchBtn.disabled = true;
+            emptyState.style.display = 'none';
+            loadingState.style.display = 'flex';
+            resultsList.style.display = 'none';
+
+            try {
+                const url = buildApiUrl();
+                const response = await fetch(url);
+                const data = await response.json();
+
+                results = data.results || [];
+                renderResults();
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                resultsList.innerHTML = '<div class="empty-state"><p class="empty-text">An error occurred while fetching results.</p></div>';
+                resultsList.style.display = 'block';
+            } finally {
+                searchBtn.disabled = false;
+                loadingState.style.display = 'none';
+            }
+        }
+
+        function renderResults() {
+            const resultsList = document.getElementById('resultsList');
+            const emptyState = document.getElementById('emptyState');
+            const mapContainer = document.getElementById('map-container');
+
+            if (results.length === 0) {
+                emptyState.style.display = 'flex';
+                resultsList.style.display = 'none';
+                mapContainer.style.display = 'none';
+                return;
+            }
+
+            if (currentView === 'list') {
+                mapContainer.style.display = 'none';
+                resultsList.style.display = 'block';
+                renderListView();
+            } else {
+                resultsList.style.display = 'none';
+                mapContainer.style.display = 'block';
+                renderMapView();
+            }
+        }
+
+        function renderListView() {
+            const resultsList = document.getElementById('resultsList');
+
+            let html = `
+                <div class="results-header">
+                    <span class="results-count"><strong>${results.length}</strong> results found</span>
+                </div>
+                <div class="results-list">
+            `;
+
+            results.forEach(item => {
+                const address = item.adresse_ban || 'Address not available';
+                const dpe = item.etiquette_dpe || '-';
+                const ges = item.etiquette_ges || '-';
+                const type = item.type_batiment || '-';
+                const surface = item.surface_habitable_logement ? `${item.surface_habitable_logement} m2` : '-';
+                const year = item.annee_construction || '-';
+                const date = item.date_etablissement_dpe ? formatDate(item.date_etablissement_dpe) : '-';
+                const conso = item.conso_5_usages_par_m2_ep ? `${item.conso_5_usages_par_m2_ep} kWh/m2/year` : '-';
+
+                html += `
+                    <div class="result-item">
+                        <div class="dpe-badges">
+                            <div class="dpe-badge energy dpe-${dpe}">${dpe}<span class="badge-label">DPE</span></div>
+                            <div class="dpe-badge ges dpe-${ges}">${ges}<span class="badge-label">GES</span></div>
+                        </div>
+                        <div class="result-info">
+                            <div class="result-address">${address}</div>
+                            <div class="result-meta">
+                                <span>${capitalize(type)}</span>
+                                <span>${surface}</span>
+                                <span>Built ${year}</span>
+                                <span>${conso}</span>
+                            </div>
+                        </div>
+                        <div class="result-details">
+                            <div class="result-date">${date}</div>
+                            <div>DPE Date</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            resultsList.innerHTML = html;
+        }
+
+        function renderMapView() {
+            const mapContainer = document.getElementById('map-container');
+            mapContainer.style.display = 'block';
+
+            if (!map) {
+                map = L.map('map').setView([46.603354, 1.888334], 6);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+            }
+
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+
+            const bounds = [];
+
+            results.forEach(item => {
+                if (item._geopoint) {
+                    const [lat, lng] = item._geopoint.split(',').map(Number);
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        const dpe = item.etiquette_dpe || '-';
+                        const color = getDpeColor(dpe);
+
+                        const icon = L.divIcon({
+                            className: 'custom-marker',
+                            html: `<div style="background:${color};width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:${dpe === 'C' || dpe === 'D' || dpe === 'E' ? '#1e293b' : 'white'};font-weight:700;font-size:12px;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.2);">${dpe}</div>`,
+                            iconSize: [28, 28],
+                            iconAnchor: [14, 14]
+                        });
+
+                        const marker = L.marker([lat, lng], { icon }).addTo(map);
+                        marker.bindPopup(`
+                            <div class="map-popup">
+                                <strong>${item.adresse_ban || 'Address not available'}</strong>
+                                DPE: ${dpe} | GES: ${item.etiquette_ges || '-'}<br>
+                                ${item.surface_habitable_logement ? item.surface_habitable_logement + ' m2' : ''} ${item.type_batiment ? '| ' + capitalize(item.type_batiment) : ''}
+                            </div>
+                        `);
+                        markers.push(marker);
+                        bounds.push([lat, lng]);
+                    }
+                }
+            });
+
+            if (bounds.length > 0) {
+                map.fitBounds(bounds, { padding: [20, 20] });
+            }
+        }
+
+        function getDpeColor(grade) {
+            const colors = {
+                'A': '#319834',
+                'B': '#33cc31',
+                'C': '#cbfc34',
+                'D': '#fbfe06',
+                'E': '#fbcc04',
+                'F': '#f68e1e',
+                'G': '#ef1d26'
+            };
+            return colors[grade] || '#cbd5e1';
+        }
+
+        function switchTab(view) {
+            currentView = view;
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`.tab:${view === 'list' ? 'first-child' : 'last-child'}`).classList.add('active');
+
+            if (results.length > 0) {
+                renderResults();
+            }
+
+            if (view === 'map' && map) {
+                setTimeout(() => map.invalidateSize(), 100);
+            }
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        function capitalize(str) {
+            if (!str) return '';
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date();
+            const oneMonthAgo = new Date();
+            oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+            document.getElementById('startDate').value = oneMonthAgo.toISOString().split('T')[0];
+        });
+    </script>
+</body>
+</html>
