@@ -3,575 +3,233 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Observatoire DPE</title>
-   
+  <title>Observatoire DPE - Compact</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/1.6.0/Control.FullScreen.min.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-
   <style>
-    :root {
-      --dpe-A: #319834; --dpe-B: #33cc31; --dpe-C: #cbfc34; --dpe-D: #fbfe06;
-      --dpe-E: #fbcc04; --dpe-F: #f68e1e; --dpe-G: #ef1d26; --dpe-default: #cbd5e1;
-      --brand-blue: #3b82f6; 
-    }
-
-    body { background-color: #f8f9fa; font-family: system-ui, -apple-system, sans-serif; }
-    
-    /* Branding */
-    .brand-header { background: white; border-bottom: 1px solid #e2e8f0; }
-    .brand-icon { background-color: var(--brand-blue); color: white; }
-    .text-brand { color: var(--brand-blue); }
-
-    /* Map Styles */
-    #map { height: 650px; width: 100%; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); z-index: 1; }
-    
-    /* Custom Marker Icon */
-    .custom-marker-pin {
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 50%; border: 2px solid white;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
-      font-size: 1.2rem; color: white;
-    }
-
-    /* Table Styles */
-    th.sortable { cursor: pointer; user-select: none; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
-    th.sortable:hover { background-color: #e2e8f0; }
-    
-    /* Filter Badges */
-    .filter-badge { cursor: pointer; margin-right: 5px; margin-bottom: 5px; transition: all 0.2s; }
-    .filter-badge:hover { opacity: 0.8; }
-
-    /* Fullscreen Button Override */
-    .leaflet-control-fullscreen a { background: white; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; }
+    :root { --brand: #3b82f6; }
+    body { background-color: #f8f9fa; font-family: system-ui, sans-serif; font-size: 0.9rem; }
+    .brand-icon { background: var(--brand); color: white; border-radius: 5px; }
+    #map { height: 600px; width: 100%; border-radius: 0.5rem; z-index: 1; }
+    .custom-pin { border-radius: 50%; border: 2px solid white; box-shadow: 0 3px 6px #00000050; color: white; display: flex; align-items: center; justify-content: center; }
+    th.sortable { cursor: pointer; user-select: none; } th.sortable:hover { background: #e2e8f0; }
+    .filter-badge { cursor: pointer; transition: 0.2s; } .filter-badge:hover { opacity: 0.8; }
+    .col-hidden { display: none !important; }
   </style>
 </head>
 <body>
-
-  <div class="container my-4">
-    <header class="d-flex align-items-center mb-4 pb-3 brand-header p-3 rounded shadow-sm">
-      <div class="brand-icon p-2 rounded me-3">
-        <i class="bi bi-building-check" style="font-size: 24px;"></i>
-      </div>
-      <div>
-        <h1 class="h4 mb-0 fw-bold text-dark">Observatoire DPE</h1>
-        <small class="text-secondary">Données issues de l'API de ADEME</small>
-      </div>
+  <div class="container my-3">
+    <header class="d-flex align-items-center mb-3 p-3 bg-white rounded shadow-sm border-bottom">
+      <div class="brand-icon p-2 me-3"><i class="bi bi-building-check fs-4"></i></div>
+      <div><h1 class="h5 mb-0 fw-bold">Observatoire DPE</h1><small class="text-muted">Données ADEME</small></div>
     </header>
 
-    <div class="card shadow-sm mb-4 border-0">
-      <div class="card-header bg-white border-bottom-0 pt-3">
-        <h5 class="mb-0 card-title h6 text-brand"><i class="bi bi-sliders me-2"></i>Filtres</h5>
-      </div>
-      <div class="card-body">
-        <div class="row g-3">
+    <div class="card shadow-sm mb-3 border-0">
+      <div class="card-body py-3">
+        <div class="row g-2">
           <div class="col-md-3">
-            <label class="form-label fw-bold small text-uppercase text-muted">Code Postal</label>
-            <input type="text" class="form-control" id="postalCodes" value="44600" placeholder="ex: 44000">
+            <label class="fw-bold text-muted small">CODE POSTAL</label>
+            <input type="text" class="form-control form-control-sm" id="postal" value="44600" placeholder="ex: 44000">
           </div>
-
           <div class="col-md-3">
-            <label class="form-label fw-bold small text-uppercase text-muted">Type de bien</label>
-            <div class="d-flex flex-column gap-1">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="typeAppartement" checked>
-                <label class="form-check-label" for="typeAppartement">Appartement</label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="typeMaison" checked>
-                <label class="form-check-label" for="typeMaison">Maison</label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="typeImmeuble" checked>
-                <label class="form-check-label" for="typeImmeuble">Immeuble</label>
-              </div>
+            <label class="fw-bold text-muted small">TYPE</label>
+            <div class="d-flex gap-2">
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="tApp" checked value="appartement"><label class="form-check-label">Appart.</label></div>
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="tMai" checked value="maison"><label class="form-check-label">Maison</label></div>
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="tImm" checked value="immeuble"><label class="form-check-label">Imm.</label></div>
             </div>
           </div>
-
           <div class="col-md-3">
-            <label class="form-label fw-bold small text-uppercase text-muted">Classe Énergie</label>
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
-              <div class="form-check"><input class="form-check-input" type="checkbox" id="gradeA" checked><label class="form-check-label" for="gradeA">A</label></div>
-              <div class="form-check"><input class="form-check-input" type="checkbox" id="gradeB" checked><label class="form-check-label" for="gradeB">B</label></div>
-              <div class="form-check"><input class="form-check-input" type="checkbox" id="gradeC" checked><label class="form-check-label" for="gradeC">C</label></div>
-              <div class="form-check"><input class="form-check-input" type="checkbox" id="gradeD" checked><label class="form-check-label" for="gradeD">D</label></div>
-              <div class="form-check"><input class="form-check-input" type="checkbox" id="gradeE" checked><label class="form-check-label" for="gradeE">E</label></div>
-              <div class="form-check"><input class="form-check-input" type="checkbox" id="gradeF" checked><label class="form-check-label" for="gradeF">F</label></div>
-              <div class="form-check"><input class="form-check-input" type="checkbox" id="gradeG" checked><label class="form-check-label" for="gradeG">G</label></div>
+            <label class="fw-bold text-muted small">DPE</label>
+            <div class="d-flex gap-1 flex-wrap" id="grades">
+              <input type="checkbox" class="btn-check" id="gA" checked value="A"><label class="btn btn-outline-success btn-sm p-0 px-1" for="gA">A</label>
+              <input type="checkbox" class="btn-check" id="gB" checked value="B"><label class="btn btn-outline-success btn-sm p-0 px-1" for="gB">B</label>
+              <input type="checkbox" class="btn-check" id="gC" checked value="C"><label class="btn btn-outline-success btn-sm p-0 px-1" for="gC">C</label>
+              <input type="checkbox" class="btn-check" id="gD" checked value="D"><label class="btn btn-outline-warning btn-sm p-0 px-1" for="gD">D</label>
+              <input type="checkbox" class="btn-check" id="gE" checked value="E"><label class="btn btn-outline-warning btn-sm p-0 px-1" for="gE">E</label>
+              <input type="checkbox" class="btn-check" id="gF" checked value="F"><label class="btn btn-outline-danger btn-sm p-0 px-1" for="gF">F</label>
+              <input type="checkbox" class="btn-check" id="gG" checked value="G"><label class="btn btn-outline-danger btn-sm p-0 px-1" for="gG">G</label>
             </div>
           </div>
-
           <div class="col-md-3">
-            <label class="form-label fw-bold small text-uppercase text-muted">Date DPE</label>
-            <div class="input-group input-group-sm mb-2">
-              <span class="input-group-text bg-light">Du</span>
-              <input type="date" class="form-control" id="startDate">
-            </div>
-            <div class="input-group input-group-sm">
-              <span class="input-group-text bg-light">Au</span>
-              <input type="date" class="form-control" id="endDate">
+            <label class="fw-bold text-muted small">DATES</label>
+            <div class="d-flex gap-1">
+              <input type="date" class="form-control form-control-sm" id="dStart">
+              <input type="date" class="form-control form-control-sm" id="dEnd">
             </div>
           </div>
         </div>
-
-        <hr class="my-3 opacity-25">
-        
-        <div class="row g-3 align-items-end">
-          <div class="col-6 col-md-2">
-            <label class="form-label small text-muted">Surface Min (m²)</label>
-            <input type="number" class="form-control form-control-sm" id="minSurface">
-          </div>
-          <div class="col-6 col-md-2">
-            <label class="form-label small text-muted">Surface Max (m²)</label>
-            <input type="number" class="form-control form-control-sm" id="maxSurface">
-          </div>
-          <div class="col-6 col-md-2">
-            <label class="form-label small text-muted">Résultats Max</label>
-            <input type="number" class="form-control form-control-sm" id="resultsSize" value="100" max="1000">
-          </div>
-          
+        <div class="row g-2 mt-1 align-items-end">
+          <div class="col-6 col-md-2"><input type="number" class="form-control form-control-sm" id="sMin" placeholder="Surf. Min"></div>
+          <div class="col-6 col-md-2"><input type="number" class="form-control form-control-sm" id="sMax" placeholder="Surf. Max"></div>
+          <div class="col-6 col-md-2"><input type="number" class="form-control form-control-sm" id="limit" value="100" max="1000"></div>
           <div class="col-12 col-md-6 d-flex gap-2">
-            <button id="searchBtn" class="btn btn-primary flex-grow-1" style="background-color: var(--brand-blue); border-color: var(--brand-blue);">
-              <i class="bi bi-search me-1"></i> Rechercher
-            </button>
-            
+            <button id="searchBtn" class="btn btn-primary btn-sm flex-grow-1" style="background:var(--brand)">Rechercher</button>
             <div class="dropdown">
-              <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Afficher/Masquer colonnes">
-                <i class="bi bi-layout-three-columns"></i>
-              </button>
-              <ul class="dropdown-menu dropdown-menu-end p-3 shadow" style="min-width: 250px;">
-                <li class="fw-bold small text-muted mb-2">COLONNES AFFICHÉES</li>
-                <li>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input col-toggle" type="checkbox" id="toggleDpeNum" data-col="col-dpe-num" checked>
-                    <label class="form-check-label" for="toggleDpeNum">Numéro DPE</label>
-                  </div>
-                </li>
-                <li>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input col-toggle" type="checkbox" id="toggleGes" data-col="col-ges" checked>
-                    <label class="form-check-label" for="toggleGes">GES</label>
-                  </div>
-                </li>
-                <li>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input col-toggle" type="checkbox" id="toggleConso" data-col="col-conso" checked>
-                    <label class="form-check-label" for="toggleConso">Consommation</label>
-                  </div>
-                </li>
-              </ul>
+              <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="dropdown"><i class="bi bi-layout-three-columns"></i></button>
+              <ul class="dropdown-menu dropdown-menu-end p-2" id="colToggles"></ul>
             </div>
           </div>
         </div>
-        
-        <div id="appliedFilters" class="mt-3 d-flex flex-wrap"></div>
+        <div id="badges" class="mt-2"></div>
       </div>
     </div>
 
-    <ul class="nav nav-tabs nav-fill mb-3" id="viewTabs" role="tablist">
-      <li class="nav-item"><button class="nav-link active fw-bold" id="list-tab" data-bs-toggle="tab" data-bs-target="#list-view"><i class="bi bi-table me-2"></i>Liste</button></li>
-      <li class="nav-item"><button class="nav-link fw-bold" id="map-tab" data-bs-toggle="tab" data-bs-target="#map-view"><i class="bi bi-map-fill me-2"></i>Carte</button></li>
+    <ul class="nav nav-tabs nav-fill mb-2" role="tablist">
+      <li class="nav-item"><button class="nav-link active py-1" data-bs-toggle="tab" data-bs-target="#list">Liste</button></li>
+      <li class="nav-item"><button class="nav-link py-1" data-bs-toggle="tab" data-bs-target="#mapView">Carte</button></li>
     </ul>
 
     <div class="tab-content">
-      <div class="tab-pane fade show active" id="list-view">
-        <div id="loadingState" class="text-center py-5 d-none"><div class="spinner-border text-primary"></div><p class="mt-2 text-muted">Chargement...</p></div>
-        <div id="emptyState" class="text-center py-5 bg-white border rounded shadow-sm">
-          <div class="mb-3 text-muted opacity-50"><i class="bi bi-search" style="font-size: 3rem;"></i></div>
-          <h5 class="text-dark">Aucune recherche effectuée</h5>
-        </div>
-        <div id="resultsContainer" class="d-none">
-          <div class="d-flex justify-content-between align-items-center mb-2 px-1">
-            <span class="badge bg-secondary" id="resultCount">0 résultats</span>
-          </div>
-          <div class="table-responsive bg-white shadow-sm rounded border">
-            <table class="table table-hover mb-0 align-middle" id="resultsTable">
-              <thead class="table-light"></thead>
-              <tbody class="border-top-0"></tbody>
+      <div class="tab-pane fade show active" id="list">
+        <div id="msg" class="text-center py-4 text-muted"><i class="bi bi-search fs-1"></i><br>Lancer une recherche</div>
+        <div id="resBox" class="d-none">
+          <span class="badge bg-secondary mb-1" id="count">0</span>
+          <div class="table-responsive bg-white border rounded" style="max-height:600px">
+            <table class="table table-hover table-sm mb-0 small align-middle" id="table">
+              <thead class="table-light sticky-top"></thead><tbody></tbody>
             </table>
           </div>
         </div>
       </div>
-      <div class="tab-pane fade" id="map-view"><div id="map"></div></div>
+      <div class="tab-pane fade" id="mapView"><div id="map"></div></div>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/1.6.0/Control.FullScreen.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/1.6.0/Control.FullScreen.min.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const C = {
+    api: 'https://data.ademe.fr/data-fair/api/v1/datasets/dpe03existant/lines',
+    cols: { A:'#319834', B:'#33cc31', C:'#cbfc34', D:'#fbfe06', E:'#fbcc04', F:'#f68e1e', G:'#ef1d26', Def:'#cbd5e1' }
+  };
 
-  <script>
-    /* --- CONFIG --- */
-    const CONFIG = {
-      apiBase: 'https://data.ademe.fr/data-fair/api/v1/datasets/dpe03existant/lines',
-      dpeLinkBase: 'https://data.ademe.fr/datasets/dpe03existant/full?p=%2Fdata-fair%2Fembed%2Fdataset%2Fdpe03existant%2Ftable&q=',
-      colors: { A: '#319834', B: '#33cc31', C: '#cbfc34', D: '#fbfe06', E: '#fbcc04', F: '#f68e1e', G: '#ef1d26', Default: '#cbd5e1' },
-      textColors: { dark: ['C', 'D', 'E'] }
-    };
+  const F = {
+    cap: s => s ? s[0].toUpperCase() + s.slice(1) : '-',
+    num: n => n ? Math.round(n).toLocaleString() : '-',
+    bad: (v, t) => `<span class="badge border text-dark" style="background:${C.cols[v]||C.cols.Def};width:25px">${v||'-'}</span>`
+  };
+  
+  const FIELDS = [
+    { k:'adresse_ban', l:'Adresse', c:'text-truncate', s:'max-width:200px' },
+    { k:'type_batiment', l:'Type', f: F.cap },
+    { k:'surface_habitable_logement', l:'Surf.', c:'text-end font-monospace', f: v=>F.num(v)+' m²' },
+    { k:'annee_construction', l:'Année', c:'text-center', f: (v,i)=>v||i.periode_construction||'-' },
+    { k:'numero_dpe', l:'N° DPE', c:'font-monospace small', t:'dpe', f: v=>`<a href="https://data.ademe.fr/datasets/dpe03existant/full?p=%2Fdata-fair%2Fembed%2Fdataset%2Fdpe03existant%2Ftable&q=${v}" target="_blank">${v}</a>` },
+    { k:'etiquette_dpe', l:'DPE', c:'text-center', f: F.bad },
+    { k:'etiquette_ges', l:'GES', c:'text-center', t:'ges', f: F.bad },
+    { k:'conso_5_usages_par_m2_ep', l:'Conso', c:'text-end font-monospace', t:'conso', f: v=>F.num(v) },
+    { k:'date_etablissement_dpe', l:'Date', c:'text-center', f: v=>v?new Date(v).toLocaleDateString():'-' }
+  ];
 
-    /* --- HELPERS --- */
-    const Formatters = {
-      capitalize: (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '-',
-      date: (s) => s ? new Date(s).toLocaleDateString('fr-FR') : '-',
-      number: (n) => n ? Math.round(n).toLocaleString('fr-FR') : '-',
+  let appData = [], sortState = {};
+
+  const App = {
+    init: () => {
+      const d = new Date(); $('dEnd').valueAsDate = d; d.setMonth(d.getMonth()-1); $('dStart').valueAsDate = d;
       
-      getDpeBadge: (grade) => {
-        const bg = CONFIG.colors[grade] || CONFIG.colors.Default;
-        const col = CONFIG.textColors.dark.includes(grade) ? '#1e293b' : '#ffffff';
-        return `<div class="badge shadow-sm border" style="background:${bg}; color:${col}; width:30px;">${grade || '-'}</div>`;
-      },
-      getGesBadge: (grade) => {
-        const bg = CONFIG.colors[grade] || '#f8f9fa';
-        const col = CONFIG.textColors.dark.includes(grade) ? '#1e293b' : '#000';
-        return `<div class="badge shadow-sm border" style="background:${bg}; color:${col}; width:30px;">${grade || '-'}</div>`;
-      },
-      dpeLink: (id) => {
-        if (!id) return '-';
-        return `<a href="${CONFIG.dpeLinkBase}${id}" target="_blank" class="text-decoration-none fw-bold" title="Voir sur data.ademe.fr">${id}</a>`;
-      }
-    };
+      App.map = L.map('map', { fullscreenControl: true }).setView([46.6, 1.9], 6);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(App.map);
+      App.markers = L.layerGroup().addTo(App.map);
 
-    /* --- CENTRAL FIELD DEFINITION --- */
-    // Adding fields here automatically adds them to List (Headers & Rows) AND Map Popup
-    const FIELD_DEFS = [
-      { 
-        id: 'adresse_ban', 
-        label: 'Adresse', 
-        isTitle: true, // Used for Map Popup Header
-        listClass: 'small ps-3 fw-medium text-truncate', 
-        style: 'max-width:200px',
-        formatter: (v) => v || 'Adresse inconnue'
-      },
-      { 
-        id: 'type_batiment', 
-        label: 'Type', 
-        listClass: 'small text-secondary', 
-        formatter: Formatters.capitalize 
-      },
-      { 
-        id: 'surface_habitable_logement', 
-        label: 'Surface', 
-        listClass: 'text-end small font-monospace', 
-        formatter: (v) => Formatters.number(v) + ' m²'
-      },
-      { 
-        id: 'annee_construction', 
-        label: 'Année', 
-        listClass: 'text-center small text-secondary',
-        // MODIFICATION 1: Utilisation de item.periode_construction si v est vide
-        formatter: (v, item) => v || item.periode_construction || '-'
-      },
-      { 
-        id: 'numero_dpe', 
-        label: 'N° DPE', 
-        listClass: 'text-center small font-monospace col-dpe-num', 
-        toggleKey: 'col-dpe-num', 
-        formatter: Formatters.dpeLink 
-      },
-      { 
-        id: 'etiquette_dpe', 
-        label: 'DPE', 
-        listClass: 'text-center', 
-        formatter: Formatters.getDpeBadge 
-      },
-      { 
-        id: 'etiquette_ges', 
-        label: 'GES', 
-        listClass: 'text-center col-ges',
-        toggleKey: 'col-ges',
-        formatter: Formatters.getGesBadge 
-      },
-      { 
-        id: 'conso_5_usages_par_m2_ep', 
-        label: 'Conso.', 
-        listClass: 'text-end small font-monospace col-conso',
-        toggleKey: 'col-conso',
-        formatter: (v) => Formatters.number(v) + ' kWh' 
-      },
-      { 
-        id: 'date_etablissement_dpe', 
-        label: 'Date', 
-        listClass: 'text-center small',
-        formatter: Formatters.date 
-      }
-    ];
+      // Fix map resize
+      document.querySelector('button[data-bs-target="#mapView"]').addEventListener('shown.bs.tab', () => {
+         setTimeout(() => { App.map.invalidateSize(); }, 100);
+      });
 
-    /* --- API --- */
-    const DPE_API = {
-      buildUrl: (filters) => {
-        const params = new URLSearchParams();
-        params.append('size', filters.size);
-        
-        // Dynamically select fields based on CONFIG
-        // MODIFICATION 2: Ajout de 'periode_construction' à la demande API
-        const fieldsToSelect = FIELD_DEFS.map(f => f.id).concat(['code_postal_ban', 'nom_commune_ban', '_geopoint', 'periode_construction']);
-        params.append('select', fieldsToSelect.join(','));
+      const thead = $('table').tHead.insertRow();
+      FIELDS.forEach(fd => {
+        if(fd.t) $('colToggles').innerHTML += `<li><label class="dropdown-item"><input type="checkbox" checked onchange="App.toggleCol('${fd.t}', this.checked)"> ${fd.l}</label></li>`;
+        const th = document.createElement('th');
+        th.className = `sortable ${fd.t||''}`; th.innerHTML = fd.l; th.onclick = () => App.sort(fd.k);
+        thead.appendChild(th);
+      });
+      thead.innerHTML += '<th class="text-center">Map</th>';
 
-        const queryParts = [];
-        const postals = filters.postal.split(/[\s,]+/).filter(Boolean);
-        if (postals.length) queryParts.push(`(${postals.map(c => `code_postal_brut:${c}`).join(' OR ')})`);
-        
-        if (filters.types.length) {
-            queryParts.push(`(${filters.types.map(t => `type_batiment:${t}`).join(' OR ')})`);
-        }
-        
-        if (filters.grades.length) queryParts.push(`(${filters.grades.map(g => `etiquette_dpe:${g}`).join(' OR ')})`);
-        if (queryParts.length) params.append('qs', queryParts.join(' AND '));
-        
-        if (filters.dateStart) params.append('date_etablissement_dpe_gte', filters.dateStart);
-        if (filters.dateEnd) params.append('date_etablissement_dpe_lte', filters.dateEnd);
-        if (filters.surfaceMin) params.append('surface_habitable_logement_gte', filters.surfaceMin);
-        if (filters.surfaceMax) params.append('surface_habitable_logement_lte', filters.surfaceMax);
+      $('searchBtn').onclick = App.search;
+    },
 
-        return `${CONFIG.apiBase}?${params.toString()}`;
-      },
-      fetch: async (f) => {
-        try { const r = await fetch(DPE_API.buildUrl(f)); const d = await r.json(); return d.results || []; } 
-        catch (e) { console.error(e); return []; }
-      }
-    };
-
-    /* --- MAP CONTROLLER --- */
-    const MapModule = {
-      map: null, markers: null,
-      init: () => {
-        if (MapModule.map) return;
-        
-        MapModule.map = L.map('map', { 
-            fullscreenControl: true,
-            fullscreenControlOptions: {
-                position: 'topleft',
-                title: 'Plein écran',
-                titleCancel: 'Quitter le plein écran',
-                content: '<i class="bi bi-arrows-fullscreen" style="font-size: 20px;"></i>'
-            }
-        }).setView([46.603354, 1.888334], 6);
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(MapModule.map);
-        MapModule.markers = L.layerGroup().addTo(MapModule.map);
-
-        MapModule.map.on('enterFullscreen', () => {
-             const icon = document.querySelector('.leaflet-control-fullscreen a i');
-             if(icon) { icon.classList.remove('bi-arrows-fullscreen'); icon.classList.add('bi-arrows-angle-contract'); }
-        });
-        MapModule.map.on('exitFullscreen', () => {
-             const icon = document.querySelector('.leaflet-control-fullscreen a i');
-             if(icon) { icon.classList.remove('bi-arrows-angle-contract'); icon.classList.add('bi-arrows-fullscreen'); }
-        });
-      },
-      createIcon: (type, grade) => {
-        const bg = CONFIG.colors[grade] || CONFIG.colors.Default;
-        const t = (type || '').toLowerCase();
-        let icon = t.includes('maison') ? 'bi-house-fill' : (t.includes('immeuble') ? 'bi-buildings-fill' : 'bi-building');
-        return L.divIcon({ className:'', html:`<div class="custom-marker-pin" style="background:${bg};width:32px;height:32px;"><i class="bi ${icon}" style="font-size:14px;"></i></div>`, iconSize:[32,32], iconAnchor:[16,16], popupAnchor:[0,-16] });
-      },
-      render: (data) => {
-        MapModule.init(); MapModule.markers.clearLayers(); const bounds = [];
-        
-        data.forEach(item => {
-          if (!item._geopoint) return;
-          const [lat, lng] = item._geopoint.split(',').map(Number);
-          if (isNaN(lat)) return;
-          
-          /* --- AUTOMAGIC POPUP BUILDER --- */
-          const titleField = FIELD_DEFS.find(f => f.isTitle);
-          let popupHtml = `<div class="fw-bold border-bottom pb-2 mb-2">${titleField ? titleField.formatter(item[titleField.id]) : 'Info'}</div>`;
-          
-          popupHtml += `<table class="table table-sm table-borderless small mb-0">`;
-          FIELD_DEFS.forEach(field => {
-            if (field.isTitle) return; 
-            // MODIFICATION 3: On passe l'objet 'item' complet au formatter
-            const value = field.formatter ? field.formatter(item[field.id], item) : item[field.id];
-            popupHtml += `<tr>
-              <td class="text-muted ps-0" style="white-space:nowrap;">${field.label}:</td>
-              <td class="fw-bold text-end ps-3">${value}</td>
-            </tr>`;
-          });
-          popupHtml += `</table>`;
-          /* ----------------------------- */
-
-          const m = L.marker([lat, lng], { icon: MapModule.createIcon(item.type_batiment, item.etiquette_dpe) }).bindPopup(popupHtml);
-          m.dpeId = item.numero_dpe; MapModule.markers.addLayer(m); bounds.push([lat, lng]);
-        });
-        if (bounds.length) MapModule.map.fitBounds(bounds, { padding: [50, 50] });
-      },
-      zoomTo: (id) => {
-        MapModule.init();
-        MapModule.markers.eachLayer(l => { if (l.dpeId === id) { MapModule.map.setView(l.getLatLng(), 16); l.openPopup(); }});
-      }
-    };
-
-    /* --- LIST CONTROLLER --- */
-    const ListModule = {
-      sort: { f: null, o: 'asc' },
+    search: async () => {
+      $('msg').innerHTML = '<div class="spinner-border text-primary"></div>'; $('resBox').classList.add('d-none');
       
-      // NEW: Dynamic Header Generation to ensure alignment
-      initTableHeaders: () => {
-        const thead = document.querySelector('#resultsTable thead');
-        const tr = document.createElement('tr');
+      const q = new URLSearchParams({ size: $('limit').value, select: FIELDS.map(x=>x.k).join(',')+',code_postal_ban,_geopoint,periode_construction' });
+      const add = (k, v) => v && q.append(k, v);
+      
+      const ps = $('postal').value.split(/[\s,]+/).filter(Boolean);
+      const types = ['tApp','tMai','tImm'].filter(id=>$(id).checked).map(id=>$(id).value);
+      const grades = ['gA','gB','gC','gD','gE','gF','gG'].filter(id=>$(id).checked).map(id=>$(id).value);
+
+      const qs = [];
+      if(ps.length) qs.push(`(${ps.map(c=>`code_postal_brut:${c}`).join(' OR ')})`);
+      if(types.length) qs.push(`(${types.map(t=>`type_batiment:${t}`).join(' OR ')})`);
+      if(grades.length) qs.push(`(${grades.map(g=>`etiquette_dpe:${g}`).join(' OR ')})`);
+      if(qs.length) q.append('qs', qs.join(' AND '));
+      
+      [['date_etablissement_dpe_gte', $('dStart').value], ['date_etablissement_dpe_lte', $('dEnd').value],
+       ['surface_habitable_logement_gte', $('sMin').value], ['surface_habitable_logement_lte', $('sMax').value]].forEach(p => add(...p));
+
+      $('badges').innerHTML = types.map(t=>`<span class="badge bg-info text-dark me-1">${t}</span>`).join('') + (ps[0] ? `<span class="badge bg-dark">${ps[0]}</span>` : '');
+
+      try {
+        const res = await fetch(`${C.api}?${q}`);
+        appData = (await res.json()).results || [];
+        App.render(); App.mapRender();
+        $('msg').classList.add('d-none'); $('resBox').classList.remove('d-none');
+      } catch(e) { $('msg').textContent = 'Erreur API'; }
+    },
+
+    render: () => {
+      $('count').textContent = appData.length + ' résultats';
+      $('table').tBodies[0].innerHTML = appData.map(d => `<tr>
+        ${FIELDS.map(f => `<td class="${f.c||''} ${f.t||''}" style="${f.s||''}">${f.f ? f.f(d[f.k], d) : (d[f.k]||'')}</td>`).join('')}
+        <td class="text-center"><button class="btn btn-sm btn-light text-primary" onclick="App.zoom('${d.numero_dpe}')"><i class="bi bi-geo"></i></button></td>
+      </tr>`).join('');
+    },
+
+    sort: (k) => {
+      const o = sortState.k === k && sortState.o === 1 ? -1 : 1; sortState = {k, o};
+      appData.sort((a,b) => (a[k] > b[k] ? 1 : -1) * o);
+      App.render();
+    },
+
+    toggleCol: (cls, show) => {
+      document.querySelectorAll('.'+cls).forEach(el => el.classList.toggle('col-hidden', !show));
+    },
+
+    mapRender: () => {
+      App.markers.clearLayers(); const b = [];
+      appData.forEach(d => {
+        if(!d._geopoint) return;
+        const [lat, lng] = d._geopoint.split(',').map(Number);
         
-        // Get Toggle States
-        const toggles = {};
-        document.querySelectorAll('.col-toggle').forEach(t => toggles[t.dataset.col] = t.checked);
+        // --- MODULAR POPUP BUILDER ---
+        const rows = FIELDS.slice(1).map(f => // Skip address (index 0)
+          `<tr><td class="text-muted pe-2">${f.l}:</td><td class="fw-bold text-end">${f.f ? f.f(d[f.k], d) : (d[f.k]||'-')}</td></tr>`
+        ).join('');
+        const html = `<div class="fw-bold border-bottom mb-2 pb-1">${d.adresse_ban||'?'}</div><table class="table table-sm table-borderless m-0 small">${rows}</table>`;
+        // -----------------------------
 
-        FIELD_DEFS.forEach(field => {
-          const th = document.createElement('th');
-          th.className = `sortable ${field.toggleKey || ''}`; // Add toggle class for selection
-          th.dataset.field = field.id;
-          th.textContent = field.label;
-          
-          // Apply toggle visibility immediately on init
-          if (field.toggleKey && !toggles[field.toggleKey]) {
-            th.classList.add('d-none');
-          }
+        const icon = (d.type_batiment||'').includes('ison') ? 'house-fill' : 'building';
+        const color = C.cols[d.etiquette_dpe] || '#ccc';
+        const m = L.marker([lat, lng], {
+          icon: L.divIcon({ html: `<div class="custom-pin" style="background:${color};width:30px;height:30px"><i class="bi bi-${icon}"></i></div>`, className:'' })
+        }).bindPopup(html);
+        m.did = d.numero_dpe; App.markers.addLayer(m); b.push([lat, lng]);
+      });
+      if(b.length) App.map.fitBounds(b);
+    },
 
-          // Add alignment classes (copying text-center/end from listClass if present)
-          if(field.listClass) {
-             if(field.listClass.includes('text-center')) th.classList.add('text-center');
-             if(field.listClass.includes('text-end')) th.classList.add('text-end');
-             if(field.listClass.includes('ps-3')) th.classList.add('ps-3');
-          }
-          
-          tr.appendChild(th);
-        });
+    zoom: (id) => {
+      const tab = new bootstrap.Tab(document.querySelector('button[data-bs-target="#mapView"]')); tab.show();
+      App.markers.eachLayer(l => { if(l.did === id) { App.map.setView(l.getLatLng(), 16); l.openPopup(); } });
+    }
+  };
 
-        // Add Action Column
-        const thAction = document.createElement('th');
-        thAction.className = 'text-center';
-        thAction.textContent = 'Action';
-        tr.appendChild(thAction);
-
-        thead.innerHTML = '';
-        thead.appendChild(tr);
-        
-        // Re-attach sort listeners
-        document.querySelectorAll('th.sortable').forEach(th => th.addEventListener('click', () => {
-           App.data = ListModule.doSort(App.data, th.dataset.field); ListModule.render(App.data);
-        }));
-      },
-
-      render: (data) => {
-        const tbody = document.querySelector('#resultsTable tbody');
-        document.getElementById('resultCount').textContent = `${data.length} résultats`;
-        tbody.innerHTML = data.length ? '' : '<tr><td colspan="100%" class="text-center py-5 text-muted">Aucun résultat</td></tr>';
-
-        // Get Toggle States
-        const toggles = {};
-        document.querySelectorAll('.col-toggle').forEach(t => toggles[t.dataset.col] = t.checked);
-        
-        data.forEach(item => {
-          const tr = document.createElement('tr');
-          
-          FIELD_DEFS.forEach(field => {
-            const td = document.createElement('td');
-            if (field.listClass) td.className = field.listClass;
-            if (field.style) td.style.cssText = field.style;
-            
-            // Handle Toggle Visibility
-            if (field.toggleKey) {
-               // Assign the specific class so it can be toggled later
-               // But also hide immediately if toggle is off
-               if (!toggles[field.toggleKey]) td.classList.add('d-none');
-            }
-
-            // MODIFICATION 3 (Bis): On passe l'objet 'item' complet au formatter
-            td.innerHTML = field.formatter ? field.formatter(item[field.id], item) : (item[field.id] || '-');
-            tr.appendChild(td);
-          });
-
-          // Action Button
-          const actionTd = document.createElement('td');
-          actionTd.className = 'text-center';
-          actionTd.innerHTML = `<button class="btn btn-sm btn-light border text-primary" onclick="App.focusOnMap('${item.numero_dpe}')"><i class="bi bi-geo-alt-fill"></i></button>`;
-          tr.appendChild(actionTd);
-
-          tbody.appendChild(tr);
-        });
-      },
-      doSort: (data, f) => {
-        const o = (ListModule.sort.f === f && ListModule.sort.o === 'asc') ? 'desc' : 'asc';
-        ListModule.sort = { f, o };
-        return [...data].sort((a, b) => {
-          let va = a[f], vb = b[f];
-          if (!isNaN(parseFloat(va)) && !isNaN(parseFloat(vb)) && f !== 'numero_dpe') {
-             return o === 'asc' ? (Number(va)||0)-(Number(vb)||0) : (Number(vb)||0)-(Number(va)||0);
-          }
-          if (f.includes('date')) { return o === 'asc' ? new Date(va)-new Date(vb) : new Date(vb)-new Date(va); }
-          return o === 'asc' ? String(va||'').localeCompare(String(vb||'')) : String(vb||'').localeCompare(String(va||''));
-        });
-      }
-    };
-
-    /* --- APP --- */
-    const App = {
-      data: [],
-      init: () => {
-        const d = new Date(); document.getElementById('endDate').valueAsDate = d;
-        d.setMonth(d.getMonth() - 1); 
-        document.getElementById('startDate').valueAsDate = d;
-
-        // Generate headers dynamically on load
-        ListModule.initTableHeaders();
-
-        document.getElementById('searchBtn').addEventListener('click', App.search);
-        
-        // Column Toggling Logic
-        document.querySelectorAll('.col-toggle').forEach(toggle => {
-          toggle.addEventListener('change', (e) => {
-            const colClass = e.target.dataset.col; 
-            const isVisible = e.target.checked;
-            
-            // Toggle Header (class added by initTableHeaders)
-            document.querySelector(`th.${colClass}`).classList.toggle('d-none', !isVisible);
-            
-            // Toggle Cells (class added by render)
-            document.querySelectorAll(`td.${colClass}`).forEach(td => {
-              td.classList.toggle('d-none', !isVisible);
-            });
-          });
-        });
-
-        document.getElementById('map-tab').addEventListener('shown.bs.tab', () => { if(MapModule.map) MapModule.map.invalidateSize(); });
-      },
-      search: async () => {
-        const ui = { empty: document.getElementById('emptyState'), load: document.getElementById('loadingState'), res: document.getElementById('resultsContainer'), btn: document.getElementById('searchBtn') };
-        ui.empty.classList.add('d-none'); ui.load.classList.remove('d-none'); ui.res.classList.add('d-none'); ui.btn.disabled = true;
-
-        const getIds = (ids) => ids.filter(id => document.getElementById(id).checked).map(id => id.replace(/^(type|grade)/, ''));
-        const grades = getIds(['gradeA', 'gradeB', 'gradeC', 'gradeD', 'gradeE', 'gradeF', 'gradeG']);
-        
-        const types = ['Appartement', 'Maison', 'Immeuble']
-          .filter(t => document.getElementById('type' + t)?.checked)
-          .map(t => t.toLowerCase());
-
-        const filters = {
-          postal: document.getElementById('postalCodes').value, types, grades,
-          dateStart: document.getElementById('startDate').value, dateEnd: document.getElementById('endDate').value,
-          surfaceMin: document.getElementById('minSurface').value, surfaceMax: document.getElementById('maxSurface').value,
-          size: document.getElementById('resultsSize').value
-        };
-
-        App.updateBadges(filters);
-        App.data = await DPE_API.fetch(filters);
-        
-        ui.load.classList.add('d-none'); ui.res.classList.remove('d-none'); ui.btn.disabled = false;
-        ListModule.render(App.data); MapModule.render(App.data);
-      },
-      focusOnMap: (id) => {
-        new bootstrap.Tab(document.querySelector('#map-tab')).show();
-        setTimeout(() => MapModule.zoomTo(id), 200);
-      },
-      updateBadges: (f) => {
-        const c = document.getElementById('appliedFilters'); c.innerHTML = '';
-        const add = (t, cl) => c.innerHTML += `<span class="badge ${cl} filter-badge">${t}</span>`;
-        if (f.postal) add(`Zone: ${f.postal}`, 'bg-dark');
-        f.types.forEach(t => add(Formatters.capitalize(t), 'bg-info text-dark'));
-        if (f.grades.length < 7) f.grades.forEach(g => add(`DPE ${g}`, 'bg-warning text-dark'));
-      }
-    };
-
-    document.addEventListener('DOMContentLoaded', App.init);
-  </script>
+  document.addEventListener('DOMContentLoaded', App.init);
+</script>
 </body>
 </html>
