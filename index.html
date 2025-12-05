@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Observatoire DPE</title>
-  
+   
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/1.6.0/Control.FullScreen.min.css" />
@@ -91,7 +91,7 @@
 
           <div class="col-md-3">
             <label class="form-label fw-bold small text-uppercase text-muted">Classe Énergie</label>
-            <div class="d-flex flex-wrap gap-2">
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
               <div class="form-check"><input class="form-check-input" type="checkbox" id="gradeA" checked><label class="form-check-label" for="gradeA">A</label></div>
               <div class="form-check"><input class="form-check-input" type="checkbox" id="gradeB" checked><label class="form-check-label" for="gradeB">B</label></div>
               <div class="form-check"><input class="form-check-input" type="checkbox" id="gradeC" checked><label class="form-check-label" for="gradeC">C</label></div>
@@ -130,13 +130,38 @@
             <label class="form-label small text-muted">Résultats Max</label>
             <input type="number" class="form-control form-control-sm" id="resultsSize" value="100" max="1000">
           </div>
+          
           <div class="col-12 col-md-6 d-flex gap-2">
             <button id="searchBtn" class="btn btn-primary flex-grow-1" style="background-color: var(--brand-blue); border-color: var(--brand-blue);">
               <i class="bi bi-search me-1"></i> Rechercher
             </button>
-            <button id="resetBtn" class="btn btn-outline-secondary" title="Réinitialiser">
-              <i class="bi bi-arrow-counterclockwise"></i>
-            </button>
+            
+            <div class="dropdown">
+              <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Afficher/Masquer colonnes">
+                <i class="bi bi-layout-three-columns"></i>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end p-3 shadow" style="min-width: 250px;">
+                <li class="fw-bold small text-muted mb-2">COLONNES AFFICHÉES</li>
+                <li>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input col-toggle" type="checkbox" id="toggleDpeNum" data-col="col-dpe-num" checked>
+                    <label class="form-check-label" for="toggleDpeNum">Numéro DPE</label>
+                  </div>
+                </li>
+                <li>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input col-toggle" type="checkbox" id="toggleGes" data-col="col-ges" checked>
+                    <label class="form-check-label" for="toggleGes">GES</label>
+                  </div>
+                </li>
+                <li>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input col-toggle" type="checkbox" id="toggleConso" data-col="col-conso" checked>
+                    <label class="form-check-label" for="toggleConso">Consommation</label>
+                  </div>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
         
@@ -162,19 +187,7 @@
           </div>
           <div class="table-responsive bg-white shadow-sm rounded border">
             <table class="table table-hover mb-0 align-middle" id="resultsTable">
-              <thead class="table-light">
-                <tr>
-                  <th class="sortable ps-3" data-field="adresse_ban">Adresse</th>
-                  <th class="sortable" data-field="type_batiment">Type</th>
-                  <th class="sortable text-end" data-field="surface_habitable_logement">Surface</th>
-                  <th class="sortable text-center" data-field="annee_construction">Année</th>
-                  <th class="sortable text-center" data-field="etiquette_dpe">DPE</th>
-                  <th class="sortable text-center" data-field="etiquette_ges">GES</th>
-                  <th class="sortable text-end" data-field="conso_5_usages_par_m2_ep">Conso.</th>
-                  <th class="sortable text-center" data-field="date_etablissement_dpe">Date</th>
-                  <th class="text-center">Action</th>
-                </tr>
-              </thead>
+              <thead class="table-light"></thead>
               <tbody class="border-top-0"></tbody>
             </table>
           </div>
@@ -192,11 +205,12 @@
     /* --- CONFIG --- */
     const CONFIG = {
       apiBase: 'https://data.ademe.fr/data-fair/api/v1/datasets/dpe03existant/lines',
+      dpeLinkBase: 'https://data.ademe.fr/datasets/dpe03existant/full?p=%2Fdata-fair%2Fembed%2Fdataset%2Fdpe03existant%2Ftable&q=',
       colors: { A: '#319834', B: '#33cc31', C: '#cbfc34', D: '#fbfe06', E: '#fbcc04', F: '#f68e1e', G: '#ef1d26', Default: '#cbd5e1' },
       textColors: { dark: ['C', 'D', 'E'] }
     };
 
-    /* --- FORMATTERS --- */
+    /* --- HELPERS --- */
     const Formatters = {
       capitalize: (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '-',
       date: (s) => s ? new Date(s).toLocaleDateString('fr-FR') : '-',
@@ -211,23 +225,94 @@
         const bg = CONFIG.colors[grade] || '#f8f9fa';
         const col = CONFIG.textColors.dark.includes(grade) ? '#1e293b' : '#000';
         return `<div class="badge shadow-sm border" style="background:${bg}; color:${col}; width:30px;">${grade || '-'}</div>`;
+      },
+      dpeLink: (id) => {
+        if (!id) return '-';
+        return `<a href="${CONFIG.dpeLinkBase}${id}" target="_blank" class="text-decoration-none fw-bold" title="Voir sur data.ademe.fr">${id}</a>`;
       }
     };
+
+    /* --- CENTRAL FIELD DEFINITION --- */
+    // Adding fields here automatically adds them to List (Headers & Rows) AND Map Popup
+    const FIELD_DEFS = [
+      { 
+        id: 'adresse_ban', 
+        label: 'Adresse', 
+        isTitle: true, // Used for Map Popup Header
+        listClass: 'small ps-3 fw-medium text-truncate', 
+        style: 'max-width:200px',
+        formatter: (v) => v || 'Adresse inconnue'
+      },
+      { 
+        id: 'type_batiment', 
+        label: 'Type', 
+        listClass: 'small text-secondary', 
+        formatter: Formatters.capitalize 
+      },
+      { 
+        id: 'surface_habitable_logement', 
+        label: 'Surface', 
+        listClass: 'text-end small font-monospace', 
+        formatter: (v) => Formatters.number(v) + ' m²'
+      },
+      { 
+        id: 'annee_construction', 
+        label: 'Année', 
+        listClass: 'text-center small text-secondary',
+        // MODIFICATION 1: Utilisation de item.periode_construction si v est vide
+        formatter: (v, item) => v || item.periode_construction || '-'
+      },
+      { 
+        id: 'numero_dpe', 
+        label: 'N° DPE', 
+        listClass: 'text-center small font-monospace col-dpe-num', 
+        toggleKey: 'col-dpe-num', 
+        formatter: Formatters.dpeLink 
+      },
+      { 
+        id: 'etiquette_dpe', 
+        label: 'DPE', 
+        listClass: 'text-center', 
+        formatter: Formatters.getDpeBadge 
+      },
+      { 
+        id: 'etiquette_ges', 
+        label: 'GES', 
+        listClass: 'text-center col-ges',
+        toggleKey: 'col-ges',
+        formatter: Formatters.getGesBadge 
+      },
+      { 
+        id: 'conso_5_usages_par_m2_ep', 
+        label: 'Conso.', 
+        listClass: 'text-end small font-monospace col-conso',
+        toggleKey: 'col-conso',
+        formatter: (v) => Formatters.number(v) + ' kWh' 
+      },
+      { 
+        id: 'date_etablissement_dpe', 
+        label: 'Date', 
+        listClass: 'text-center small',
+        formatter: Formatters.date 
+      }
+    ];
 
     /* --- API --- */
     const DPE_API = {
       buildUrl: (filters) => {
         const params = new URLSearchParams();
         params.append('size', filters.size);
-        params.append('select', 'adresse_ban,code_postal_ban,nom_commune_ban,etiquette_dpe,etiquette_ges,type_batiment,surface_habitable_logement,annee_construction,date_etablissement_dpe,conso_5_usages_par_m2_ep,_geopoint,numero_dpe');
+        
+        // Dynamically select fields based on CONFIG
+        // MODIFICATION 2: Ajout de 'periode_construction' à la demande API
+        const fieldsToSelect = FIELD_DEFS.map(f => f.id).concat(['code_postal_ban', 'nom_commune_ban', '_geopoint', 'periode_construction']);
+        params.append('select', fieldsToSelect.join(','));
 
         const queryParts = [];
         const postals = filters.postal.split(/[\s,]+/).filter(Boolean);
         if (postals.length) queryParts.push(`(${postals.map(c => `code_postal_brut:${c}`).join(' OR ')})`);
         
-        // Immeuble/Type Logic
         if (filters.types.length) {
-            // Using "type_batiment" filter
             queryParts.push(`(${filters.types.map(t => `type_batiment:${t}`).join(' OR ')})`);
         }
         
@@ -263,6 +348,9 @@
             }
         }).setView([46.603354, 1.888334], 6);
         
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(MapModule.map);
+        MapModule.markers = L.layerGroup().addTo(MapModule.map);
+
         MapModule.map.on('enterFullscreen', () => {
              const icon = document.querySelector('.leaflet-control-fullscreen a i');
              if(icon) { icon.classList.remove('bi-arrows-fullscreen'); icon.classList.add('bi-arrows-angle-contract'); }
@@ -271,36 +359,39 @@
              const icon = document.querySelector('.leaflet-control-fullscreen a i');
              if(icon) { icon.classList.remove('bi-arrows-angle-contract'); icon.classList.add('bi-arrows-fullscreen'); }
         });
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(MapModule.map);
-        MapModule.markers = L.layerGroup().addTo(MapModule.map);
       },
       createIcon: (type, grade) => {
         const bg = CONFIG.colors[grade] || CONFIG.colors.Default;
         const t = (type || '').toLowerCase();
-        // Updated icon logic: Immeuble gets the 'buildings' icon
         let icon = t.includes('maison') ? 'bi-house-fill' : (t.includes('immeuble') ? 'bi-buildings-fill' : 'bi-building');
         return L.divIcon({ className:'', html:`<div class="custom-marker-pin" style="background:${bg};width:32px;height:32px;"><i class="bi ${icon}" style="font-size:14px;"></i></div>`, iconSize:[32,32], iconAnchor:[16,16], popupAnchor:[0,-16] });
       },
       render: (data) => {
         MapModule.init(); MapModule.markers.clearLayers(); const bounds = [];
+        
         data.forEach(item => {
           if (!item._geopoint) return;
           const [lat, lng] = item._geopoint.split(',').map(Number);
           if (isNaN(lat)) return;
           
-          const content = `
-            <div class="fw-bold border-bottom pb-2 mb-2">${item.adresse_ban || 'Adresse inconnue'}</div>
-            <div class="d-flex gap-2 mb-2">${Formatters.getDpeBadge(item.etiquette_dpe)} ${Formatters.getGesBadge(item.etiquette_ges)}</div>
-            <table class="table table-sm table-borderless small mb-0">
-              <tr><td class="text-muted ps-0">Type:</td><td class="fw-bold text-end">${Formatters.capitalize(item.type_batiment)}</td></tr>
-              <tr><td class="text-muted ps-0">Surface:</td><td class="fw-bold text-end">${Formatters.number(item.surface_habitable_logement)} m²</td></tr>
-              <tr><td class="text-muted ps-0">Année:</td><td class="fw-bold text-end">${item.annee_construction || '-'}</td></tr>
-              <tr><td class="text-muted ps-0">Conso:</td><td class="fw-bold text-end">${Formatters.number(item.conso_5_usages_par_m2_ep)} kWh</td></tr>
-              <tr><td class="text-muted ps-0">Date:</td><td class="fw-bold text-end">${Formatters.date(item.date_etablissement_dpe)}</td></tr>
-            </table>`;
+          /* --- AUTOMAGIC POPUP BUILDER --- */
+          const titleField = FIELD_DEFS.find(f => f.isTitle);
+          let popupHtml = `<div class="fw-bold border-bottom pb-2 mb-2">${titleField ? titleField.formatter(item[titleField.id]) : 'Info'}</div>`;
+          
+          popupHtml += `<table class="table table-sm table-borderless small mb-0">`;
+          FIELD_DEFS.forEach(field => {
+            if (field.isTitle) return; 
+            // MODIFICATION 3: On passe l'objet 'item' complet au formatter
+            const value = field.formatter ? field.formatter(item[field.id], item) : item[field.id];
+            popupHtml += `<tr>
+              <td class="text-muted ps-0" style="white-space:nowrap;">${field.label}:</td>
+              <td class="fw-bold text-end ps-3">${value}</td>
+            </tr>`;
+          });
+          popupHtml += `</table>`;
+          /* ----------------------------- */
 
-          const m = L.marker([lat, lng], { icon: MapModule.createIcon(item.type_batiment, item.etiquette_dpe) }).bindPopup(content);
+          const m = L.marker([lat, lng], { icon: MapModule.createIcon(item.type_batiment, item.etiquette_dpe) }).bindPopup(popupHtml);
           m.dpeId = item.numero_dpe; MapModule.markers.addLayer(m); bounds.push([lat, lng]);
         });
         if (bounds.length) MapModule.map.fitBounds(bounds, { padding: [50, 50] });
@@ -314,24 +405,87 @@
     /* --- LIST CONTROLLER --- */
     const ListModule = {
       sort: { f: null, o: 'asc' },
+      
+      // NEW: Dynamic Header Generation to ensure alignment
+      initTableHeaders: () => {
+        const thead = document.querySelector('#resultsTable thead');
+        const tr = document.createElement('tr');
+        
+        // Get Toggle States
+        const toggles = {};
+        document.querySelectorAll('.col-toggle').forEach(t => toggles[t.dataset.col] = t.checked);
+
+        FIELD_DEFS.forEach(field => {
+          const th = document.createElement('th');
+          th.className = `sortable ${field.toggleKey || ''}`; // Add toggle class for selection
+          th.dataset.field = field.id;
+          th.textContent = field.label;
+          
+          // Apply toggle visibility immediately on init
+          if (field.toggleKey && !toggles[field.toggleKey]) {
+            th.classList.add('d-none');
+          }
+
+          // Add alignment classes (copying text-center/end from listClass if present)
+          if(field.listClass) {
+             if(field.listClass.includes('text-center')) th.classList.add('text-center');
+             if(field.listClass.includes('text-end')) th.classList.add('text-end');
+             if(field.listClass.includes('ps-3')) th.classList.add('ps-3');
+          }
+          
+          tr.appendChild(th);
+        });
+
+        // Add Action Column
+        const thAction = document.createElement('th');
+        thAction.className = 'text-center';
+        thAction.textContent = 'Action';
+        tr.appendChild(thAction);
+
+        thead.innerHTML = '';
+        thead.appendChild(tr);
+        
+        // Re-attach sort listeners
+        document.querySelectorAll('th.sortable').forEach(th => th.addEventListener('click', () => {
+           App.data = ListModule.doSort(App.data, th.dataset.field); ListModule.render(App.data);
+        }));
+      },
+
       render: (data) => {
         const tbody = document.querySelector('#resultsTable tbody');
         document.getElementById('resultCount').textContent = `${data.length} résultats`;
-        tbody.innerHTML = data.length ? '' : '<tr><td colspan="9" class="text-center py-5 text-muted">Aucun résultat</td></tr>';
+        tbody.innerHTML = data.length ? '' : '<tr><td colspan="100%" class="text-center py-5 text-muted">Aucun résultat</td></tr>';
+
+        // Get Toggle States
+        const toggles = {};
+        document.querySelectorAll('.col-toggle').forEach(t => toggles[t.dataset.col] = t.checked);
         
         data.forEach(item => {
           const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td class="small ps-3 fw-medium text-truncate" style="max-width:200px;" title="${item.adresse_ban}">${item.adresse_ban || '-'}</td>
-            <td class="small text-secondary">${Formatters.capitalize(item.type_batiment)}</td>
-            <td class="text-end small font-monospace">${Formatters.number(item.surface_habitable_logement)} m²</td>
-            <td class="text-center small text-secondary">${item.annee_construction || '-'}</td>
-            <td class="text-center">${Formatters.getDpeBadge(item.etiquette_dpe)}</td>
-            <td class="text-center">${Formatters.getGesBadge(item.etiquette_ges)}</td>
-            <td class="text-end small font-monospace">${Formatters.number(item.conso_5_usages_par_m2_ep)}</td>
-            <td class="text-center small">${Formatters.date(item.date_etablissement_dpe)}</td>
-            <td class="text-center"><button class="btn btn-sm btn-light border text-primary" onclick="App.focusOnMap('${item.numero_dpe}')"><i class="bi bi-geo-alt-fill"></i></button></td>
-          `;
+          
+          FIELD_DEFS.forEach(field => {
+            const td = document.createElement('td');
+            if (field.listClass) td.className = field.listClass;
+            if (field.style) td.style.cssText = field.style;
+            
+            // Handle Toggle Visibility
+            if (field.toggleKey) {
+               // Assign the specific class so it can be toggled later
+               // But also hide immediately if toggle is off
+               if (!toggles[field.toggleKey]) td.classList.add('d-none');
+            }
+
+            // MODIFICATION 3 (Bis): On passe l'objet 'item' complet au formatter
+            td.innerHTML = field.formatter ? field.formatter(item[field.id], item) : (item[field.id] || '-');
+            tr.appendChild(td);
+          });
+
+          // Action Button
+          const actionTd = document.createElement('td');
+          actionTd.className = 'text-center';
+          actionTd.innerHTML = `<button class="btn btn-sm btn-light border text-primary" onclick="App.focusOnMap('${item.numero_dpe}')"><i class="bi bi-geo-alt-fill"></i></button>`;
+          tr.appendChild(actionTd);
+
           tbody.appendChild(tr);
         });
       },
@@ -340,10 +494,10 @@
         ListModule.sort = { f, o };
         return [...data].sort((a, b) => {
           let va = a[f], vb = b[f];
-          if (['surface_habitable_logement', 'annee_construction', 'conso_5_usages_par_m2_ep'].includes(f)) {
+          if (!isNaN(parseFloat(va)) && !isNaN(parseFloat(vb)) && f !== 'numero_dpe') {
              return o === 'asc' ? (Number(va)||0)-(Number(vb)||0) : (Number(vb)||0)-(Number(va)||0);
           }
-          if (f === 'date_etablissement_dpe') { return o === 'asc' ? new Date(va)-new Date(vb) : new Date(vb)-new Date(va); }
+          if (f.includes('date')) { return o === 'asc' ? new Date(va)-new Date(vb) : new Date(vb)-new Date(va); }
           return o === 'asc' ? String(va||'').localeCompare(String(vb||'')) : String(vb||'').localeCompare(String(va||''));
         });
       }
@@ -354,15 +508,30 @@
       data: [],
       init: () => {
         const d = new Date(); document.getElementById('endDate').valueAsDate = d;
-        // FIX: Changed from 12 months (one year) to 1 month ago
         d.setMonth(d.getMonth() - 1); 
         document.getElementById('startDate').valueAsDate = d;
 
+        // Generate headers dynamically on load
+        ListModule.initTableHeaders();
+
         document.getElementById('searchBtn').addEventListener('click', App.search);
-        document.getElementById('resetBtn').addEventListener('click', App.reset);
-        document.querySelectorAll('th.sortable').forEach(th => th.addEventListener('click', () => {
-           App.data = ListModule.doSort(App.data, th.dataset.field); ListModule.render(App.data);
-        }));
+        
+        // Column Toggling Logic
+        document.querySelectorAll('.col-toggle').forEach(toggle => {
+          toggle.addEventListener('change', (e) => {
+            const colClass = e.target.dataset.col; 
+            const isVisible = e.target.checked;
+            
+            // Toggle Header (class added by initTableHeaders)
+            document.querySelector(`th.${colClass}`).classList.toggle('d-none', !isVisible);
+            
+            // Toggle Cells (class added by render)
+            document.querySelectorAll(`td.${colClass}`).forEach(td => {
+              td.classList.toggle('d-none', !isVisible);
+            });
+          });
+        });
+
         document.getElementById('map-tab').addEventListener('shown.bs.tab', () => { if(MapModule.map) MapModule.map.invalidateSize(); });
       },
       search: async () => {
@@ -372,10 +541,9 @@
         const getIds = (ids) => ids.filter(id => document.getElementById(id).checked).map(id => id.replace(/^(type|grade)/, ''));
         const grades = getIds(['gradeA', 'gradeB', 'gradeC', 'gradeD', 'gradeE', 'gradeF', 'gradeG']);
         
-        // FIX: Reverted to array-based check logic for Immeuble to ensure consistent handling
         const types = ['Appartement', 'Maison', 'Immeuble']
           .filter(t => document.getElementById('type' + t)?.checked)
-          .map(t => t.toLowerCase()); // Ensures 'Immeuble' becomes 'immeuble' for the API
+          .map(t => t.toLowerCase());
 
         const filters = {
           postal: document.getElementById('postalCodes').value, types, grades,
@@ -393,12 +561,6 @@
       focusOnMap: (id) => {
         new bootstrap.Tab(document.querySelector('#map-tab')).show();
         setTimeout(() => MapModule.zoomTo(id), 200);
-      },
-      reset: () => {
-        document.getElementById('postalCodes').value = '';
-        document.querySelectorAll('input[type=checkbox]').forEach(c => c.checked = true);
-        document.querySelectorAll('input[type=number]').forEach(i => i.value = '');
-        App.search();
       },
       updateBadges: (f) => {
         const c = document.getElementById('appliedFilters'); c.innerHTML = '';
