@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Observatoire DPE - Compact</title>
+  <title>Observatoire DPE - Mobile Fix</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/1.6.0/Control.FullScreen.min.css" />
@@ -14,7 +14,15 @@
     .brand-icon { background: var(--brand); color: white; border-radius: 5px; }
     #map { height: 600px; width: 100%; border-radius: 0.5rem; z-index: 1; }
     .custom-pin { border-radius: 50%; border: 2px solid white; box-shadow: 0 3px 6px #00000050; color: white; display: flex; align-items: center; justify-content: center; }
-    th.sortable { cursor: pointer; user-select: none; } th.sortable:hover { background: #e2e8f0; }
+    
+    /* --- NEW SORTING STYLES --- */
+    th.sortable { cursor: pointer; user-select: none; transition: background 0.2s; position: relative; }
+    th.sortable:hover { background: #e2e8f0; }
+    th.sortable.active-sort { background: #e0f2fe !important; color: #0369a1; } /* Light blue active state */
+    th.sortable i { transition: opacity 0.2s; opacity: 0.3; }
+    th.sortable.active-sort i { opacity: 1; }
+    /* -------------------------- */
+
     .filter-badge { cursor: pointer; transition: 0.2s; } .filter-badge:hover { opacity: 0.8; }
     .col-hidden { display: none !important; }
   </style>
@@ -113,7 +121,7 @@
     num: n => n ? Math.round(n).toLocaleString() : '-',
     bad: (v, t) => `<span class="badge border text-dark" style="background:${C.cols[v]||C.cols.Def};width:25px">${v||'-'}</span>`
   };
-  
+   
   const FIELDS = [
     { k:'adresse_ban', l:'Adresse', c:'text-truncate', s:'max-width:200px' },
     { k:'type_batiment', l:'Type', f: F.cap },
@@ -138,14 +146,23 @@
 
       // Fix map resize
       document.querySelector('button[data-bs-target="#mapView"]').addEventListener('shown.bs.tab', () => {
-         setTimeout(() => { App.map.invalidateSize(); }, 100);
+          setTimeout(() => { App.map.invalidateSize(); }, 100);
       });
 
       const thead = $('table').tHead.insertRow();
       FIELDS.forEach(fd => {
         if(fd.t) $('colToggles').innerHTML += `<li><label class="dropdown-item"><input type="checkbox" checked onchange="App.toggleCol('${fd.t}', this.checked)"> ${fd.l}</label></li>`;
+        
+        // --- IMPROVED HEADER CREATION ---
         const th = document.createElement('th');
-        th.className = `sortable ${fd.t||''}`; th.innerHTML = fd.l; th.onclick = () => App.sort(fd.k);
+        th.className = `sortable ${fd.t||''}`;
+        th.dataset.key = fd.k; // Store key for identification
+        // We use a flex container to make the whole cell nicer
+        th.innerHTML = `<div class="d-flex align-items-center justify-content-between">
+            <span>${fd.l}</span><i class="bi bi-arrow-down-up ms-1 small"></i>
+        </div>`;
+        // Better event listener
+        th.addEventListener('click', () => App.sort(fd.k));
         thead.appendChild(th);
       });
       thead.innerHTML += '<th class="text-center">Map</th>';
@@ -177,6 +194,13 @@
       try {
         const res = await fetch(`${C.api}?${q}`);
         appData = (await res.json()).results || [];
+        // Reset sort state on new search
+        sortState = {};
+        document.querySelectorAll('th.sortable').forEach(th => {
+             th.classList.remove('active-sort');
+             th.querySelector('i').className = 'bi bi-arrow-down-up ms-1 small';
+        });
+
         App.render(); App.mapRender();
         $('msg').classList.add('d-none'); $('resBox').classList.remove('d-none');
       } catch(e) { $('msg').textContent = 'Erreur API'; }
@@ -191,8 +215,24 @@
     },
 
     sort: (k) => {
-      const o = sortState.k === k && sortState.o === 1 ? -1 : 1; sortState = {k, o};
+      // 1. Logic
+      const o = sortState.k === k && sortState.o === 1 ? -1 : 1; 
+      sortState = {k, o};
       appData.sort((a,b) => (a[k] > b[k] ? 1 : -1) * o);
+
+      // 2. Visual Update (The fix for mobile feedback)
+      document.querySelectorAll('th.sortable').forEach(th => {
+        const icon = th.querySelector('i');
+        th.classList.remove('active-sort');
+        icon.className = 'bi bi-arrow-down-up ms-1 small'; // reset icon
+        
+        if (th.dataset.key === k) {
+           th.classList.add('active-sort'); // Add background color
+           // Set specific icon
+           icon.className = `bi bi-sort-${o === 1 ? 'down' : 'up'} ms-1 small`;
+        }
+      });
+
       App.render();
     },
 
@@ -206,12 +246,10 @@
         if(!d._geopoint) return;
         const [lat, lng] = d._geopoint.split(',').map(Number);
         
-        // --- MODULAR POPUP BUILDER ---
-        const rows = FIELDS.slice(1).map(f => // Skip address (index 0)
+        const rows = FIELDS.slice(1).map(f => 
           `<tr><td class="text-muted pe-2">${f.l}:</td><td class="fw-bold text-end">${f.f ? f.f(d[f.k], d) : (d[f.k]||'-')}</td></tr>`
         ).join('');
         const html = `<div class="fw-bold border-bottom mb-2 pb-1">${d.adresse_ban||'?'}</div><table class="table table-sm table-borderless m-0 small">${rows}</table>`;
-        // -----------------------------
 
         const icon = (d.type_batiment||'').includes('ison') ? 'house-fill' : 'building';
         const color = C.cols[d.etiquette_dpe] || '#ccc';
