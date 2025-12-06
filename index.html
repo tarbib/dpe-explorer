@@ -1,103 +1,108 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Observatoire DPE - Mobile Sort Fix</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Observatoire DPE — Compact (rewrite)</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/1.6.0/Control.FullScreen.min.css" />
+  <!-- Fixed fullscreen plugin CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
   <style>
-    :root { --brand: #3b82f6; }
-    body { background-color: #f8f9fa; font-family: system-ui, sans-serif; font-size: 0.9rem; }
-    .brand-icon { background: var(--brand); color: white; border-radius: 5px; }
-    #map { height: 600px; width: 100%; border-radius: 0.5rem; z-index: 1; }
-    .custom-pin { border-radius: 50%; border: 2px solid white; box-shadow: 0 3px 6px #00000050; color: white; display: flex; align-items: center; justify-content: center; }
-    
-    /* --- FIXED SORTING STYLES --- */
-    th.sortable { 
-      cursor: pointer; 
-      user-select: none; 
-      position: relative; 
-      z-index: 1020; /* Force header above scroll content */
+    :root{--brand:#3b82f6}
+    body{background:#f8f9fa;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial}
+    #map{height:520px;border-radius:.5rem}
+    .custom-pin{border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 6px rgba(0,0,0,.15)}
+    th.sortable{cursor:pointer;user-select:none}
+    .col-hidden{display:none!important}
+    .table-wrap{max-height:520px;overflow:auto}
+    .btn-check + .btn{padding:0 .4rem}
+    /* optional: make fullscreen button look better with Bootstrap */
+    .leaflet-control-fullscreen-button {
+      margin: 0.25rem !important;
+      background-color: white !important;
+      border-radius: 0.25rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
-    th.sortable:hover { background: #e2e8f0; }
-    th.sortable.active-sort { background: #e0f2fe !important; color: #0369a1; }
-    
-    /* CRITICAL FIX: This makes the inner text/icons 'invisible' to clicks, 
-       so the click always hits the <th> cell directly. */
-    th.sortable > * { pointer-events: none; }
-    
-    th.sortable i { transition: opacity 0.2s; opacity: 0.3; }
-    th.sortable.active-sort i { opacity: 1; }
-    /* ---------------------------- */
-
-    .filter-badge { cursor: pointer; transition: 0.2s; } .filter-badge:hover { opacity: 0.8; }
-    .col-hidden { display: none !important; }
   </style>
 </head>
 <body>
   <div class="container my-3">
-    <header class="d-flex align-items-center mb-3 p-3 bg-white rounded shadow-sm border-bottom">
-      <div class="brand-icon p-2 me-3"><i class="bi bi-building-check fs-4"></i></div>
-      <div><h1 class="h5 mb-0 fw-bold">Observatoire DPE</h1><small class="text-muted">Données ADEME</small></div>
+    <header class="d-flex align-items-center mb-3 p-3 bg-white rounded shadow-sm">
+      <div class="bg-primary text-white rounded p-2 me-3"><i class="bi bi-building-check fs-4"></i></div>
+      <div>
+        <h1 class="h5 mb-0">Observatoire DPE</h1>
+        <small class="text-muted">Données ADEME</small>
+      </div>
     </header>
 
     <div class="card shadow-sm mb-3 border-0">
       <div class="card-body py-3">
-        <div class="row g-2">
-          <div class="col-md-3">
-            <label class="fw-bold text-muted small">CODE POSTAL</label>
-            <input type="text" class="form-control form-control-sm" id="postal" value="44600" placeholder="ex: 44000">
+        <form id="filters" class="row g-2" onsubmit="return false;">
+          <div class="col-12 col-md-3">
+            <label class="form-label small text-muted">CODE POSTAL</label>
+            <input id="postal" class="form-control form-control-sm" value="44600" placeholder="ex: 44000">
           </div>
-          <div class="col-md-3">
-            <label class="fw-bold text-muted small">TYPE</label>
+
+          <div class="col-12 col-md-3">
+            <label class="form-label small text-muted">TYPE</label>
             <div class="d-flex gap-2">
-              <div class="form-check"><input class="form-check-input" type="checkbox" id="tApp" checked value="appartement"><label class="form-check-label">Appart.</label></div>
-              <div class="form-check"><input class="form-check-input" type="checkbox" id="tMai" checked value="maison"><label class="form-check-label">Maison</label></div>
-              <div class="form-check"><input class="form-check-input" type="checkbox" id="tImm" checked value="immeuble"><label class="form-check-label">Imm.</label></div>
+              <div class="form-check form-check-inline">
+                <input type="checkbox" class="form-check-input" id="tApp" value="appartement" checked>
+                <label class="form-check-label" for="tApp">Appart.</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input type="checkbox" class="form-check-input" id="tMai" value="maison" checked>
+                <label class="form-check-label" for="tMai">Maison</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input type="checkbox" class="form-check-input" id="tImm" value="immeuble" checked>
+                <label class="form-check-label" for="tImm">Imm.</label>
+              </div>
             </div>
           </div>
-          <div class="col-md-3">
-            <label class="fw-bold text-muted small">DPE</label>
-            <div class="d-flex gap-1 flex-wrap" id="grades">
-              <input type="checkbox" class="btn-check" id="gA" checked value="A"><label class="btn btn-outline-success btn-sm p-0 px-1" for="gA">A</label>
-              <input type="checkbox" class="btn-check" id="gB" checked value="B"><label class="btn btn-outline-success btn-sm p-0 px-1" for="gB">B</label>
-              <input type="checkbox" class="btn-check" id="gC" checked value="C"><label class="btn btn-outline-success btn-sm p-0 px-1" for="gC">C</label>
-              <input type="checkbox" class="btn-check" id="gD" checked value="D"><label class="btn btn-outline-warning btn-sm p-0 px-1" for="gD">D</label>
-              <input type="checkbox" class="btn-check" id="gE" checked value="E"><label class="btn btn-outline-warning btn-sm p-0 px-1" for="gE">E</label>
-              <input type="checkbox" class="btn-check" id="gF" checked value="F"><label class="btn btn-outline-danger btn-sm p-0 px-1" for="gF">F</label>
-              <input type="checkbox" class="btn-check" id="gG" checked value="G"><label class="btn btn-outline-danger btn-sm p-0 px-1" for="gG">G</label>
+
+          <div class="col-12 col-md-3">
+            <label class="form-label small text-muted">DPE</label>
+            <div id="grades" class="d-flex gap-1 flex-wrap">
+              <input type="checkbox" class="btn-check" id="gA" checked value="A"><label class="btn btn-outline-success btn-sm" for="gA">A</label>
+              <input type="checkbox" class="btn-check" id="gB" checked value="B"><label class="btn btn-outline-success btn-sm" for="gB">B</label>
+              <input type="checkbox" class="btn-check" id="gC" checked value="C"><label class="btn btn-outline-success btn-sm" for="gC">C</label>
+              <input type="checkbox" class="btn-check" id="gD" checked value="D"><label class="btn btn-outline-warning btn-sm" for="gD">D</label>
+              <input type="checkbox" class="btn-check" id="gE" checked value="E"><label class="btn btn-outline-warning btn-sm" for="gE">E</label>
+              <input type="checkbox" class="btn-check" id="gF" checked value="F"><label class="btn btn-outline-danger btn-sm" for="gF">F</label>
+              <input type="checkbox" class="btn-check" id="gG" checked value="G"><label class="btn btn-outline-danger btn-sm" for="gG">G</label>
             </div>
           </div>
-          <div class="col-md-3">
-            <label class="fw-bold text-muted small">DATES</label>
+
+          <div class="col-12 col-md-3">
+            <label class="form-label small text-muted">DATES</label>
             <div class="d-flex gap-1">
-              <input type="date" class="form-control form-control-sm" id="dStart">
-              <input type="date" class="form-control form-control-sm" id="dEnd">
+              <input id="dStart" type="date" class="form-control form-control-sm">
+              <input id="dEnd" type="date" class="form-control form-control-sm">
             </div>
           </div>
-        </div>
-        <div class="row g-2 mt-1 align-items-end">
-          <div class="col-6 col-md-2"><input type="number" class="form-control form-control-sm" id="sMin" placeholder="Surf. Min"></div>
-          <div class="col-6 col-md-2"><input type="number" class="form-control form-control-sm" id="sMax" placeholder="Surf. Max"></div>
-          <div class="col-6 col-md-2"><input type="number" class="form-control form-control-sm" id="limit" value="100" max="1000"></div>
+
+          <div class="col-6 col-md-2"><input id="sMin" type="number" class="form-control form-control-sm" placeholder="Surf. Min"></div>
+          <div class="col-6 col-md-2"><input id="sMax" type="number" class="form-control form-control-sm" placeholder="Surf. Max"></div>
+          <div class="col-6 col-md-2"><input id="limit" type="number" class="form-control form-control-sm" value="100" max="1000"></div>
+
           <div class="col-12 col-md-6 d-flex gap-2">
-            <button id="searchBtn" class="btn btn-primary btn-sm flex-grow-1" style="background:var(--brand)">Rechercher</button>
+            <button id="searchBtn" class="btn btn-primary btn-sm w-100" type="button" style="background:var(--brand)">Rechercher</button>
             <div class="dropdown">
               <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="dropdown"><i class="bi bi-layout-three-columns"></i></button>
               <ul class="dropdown-menu dropdown-menu-end p-2" id="colToggles"></ul>
             </div>
           </div>
-        </div>
+        </form>
         <div id="badges" class="mt-2"></div>
       </div>
     </div>
 
-    <ul class="nav nav-tabs nav-fill mb-2" role="tablist">
-      <li class="nav-item"><button class="nav-link active py-1" data-bs-toggle="tab" data-bs-target="#list">Liste</button></li>
-      <li class="nav-item"><button class="nav-link py-1" data-bs-toggle="tab" data-bs-target="#mapView">Carte</button></li>
+    <ul class="nav nav-tabs mb-2" role="tablist">
+      <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#list">Liste</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#mapView">Carte</button></li>
     </ul>
 
     <div class="tab-content">
@@ -105,192 +110,180 @@
         <div id="msg" class="text-center py-4 text-muted"><i class="bi bi-search fs-1"></i><br>Lancer une recherche</div>
         <div id="resBox" class="d-none">
           <span class="badge bg-secondary mb-1" id="count">0</span>
-          <div class="table-responsive bg-white border rounded" style="max-height:600px">
+          <div class="table-responsive bg-white border rounded table-wrap">
             <table class="table table-hover table-sm mb-0 small align-middle" id="table">
-              <thead class="table-light sticky-top"></thead><tbody></tbody>
+              <thead class="table-light sticky-top"></thead>
+              <tbody></tbody>
             </table>
           </div>
         </div>
       </div>
-      <div class="tab-pane fade" id="mapView"><div id="map"></div></div>
+
+      <div class="tab-pane fade" id="mapView">
+        <div id="map"></div>
+      </div>
     </div>
   </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/1.6.0/Control.FullScreen.min.js"></script>
+<!-- Fixed fullscreen plugin JS -->
+<script src="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.js"></script>
+
 <script>
-  const $ = (id) => document.getElementById(id);
-  const C = {
-    api: 'https://data.ademe.fr/data-fair/api/v1/datasets/dpe03existant/lines',
-    cols: { A:'#319834', B:'#33cc31', C:'#cbfc34', D:'#fbfe06', E:'#fbcc04', F:'#f68e1e', G:'#ef1d26', Def:'#cbd5e1' }
-  };
+/* -------------------------
+   Compact JS rebuild (GET API style like original)
+   - stable sorting
+   - pointer/touch sorting
+   - identical fields in list & popup
+   ------------------------- */
 
-  const F = {
-    cap: s => s ? s[0].toUpperCase() + s.slice(1) : '-',
-    num: n => n ? Math.round(n).toLocaleString() : '-',
-    bad: (v, t) => `<span class="badge border text-dark" style="background:${C.cols[v]||C.cols.Def};width:25px">${v||'-'}</span>`
-  };
-   
-  const FIELDS = [
-    { k:'adresse_ban', l:'Adresse', c:'text-truncate', s:'max-width:200px' },
-    { k:'type_batiment', l:'Type', f: F.cap },
-    { k:'surface_habitable_logement', l:'Surf.', c:'text-end font-monospace', f: v=>F.num(v)+' m²' },
-    { k:'annee_construction', l:'Année', c:'text-center', f: (v,i)=>v||i.periode_construction||'-' },
-    { k:'numero_dpe', l:'N° DPE', c:'font-monospace small', t:'dpe', f: v=>`<a href="https://data.ademe.fr/datasets/dpe03existant/full?p=%2Fdata-fair%2Fembed%2Fdataset%2Fdpe03existant%2Ftable&q=${v}" target="_blank">${v}</a>` },
-    { k:'etiquette_dpe', l:'DPE', c:'text-center', f: F.bad },
-    { k:'etiquette_ges', l:'GES', c:'text-center', t:'ges', f: F.bad },
-    { k:'conso_5_usages_par_m2_ep', l:'Conso', c:'text-end font-monospace', t:'conso', f: v=>F.num(v) },
-    { k:'date_etablissement_dpe', l:'Date', c:'text-center', f: v=>v?new Date(v).toLocaleDateString():'-' }
+const $ = id => document.getElementById(id);
+const API = 'https://data.ademe.fr/data-fair/api/v1/datasets/dpe03existant/lines';
+const COLS = { A:'#319834', B:'#33cc31', C:'#cbfc34', D:'#fbfe06', E:'#fbcc04', F:'#f68e1e', G:'#ef1d26', Def:'#cbd5e1' };
+
+const FIELDS = [
+  {k:'adresse_ban', l:'Adresse', c:'text-truncate', s:'max-width:220px'},
+  {k:'type_batiment', l:'Type'},
+  {k:'surface_habitable_logement', l:'Surf.', c:'text-end font-monospace', f:v=>v?Math.round(v)+' m²':'-'},
+  {k:'annee_construction', l:'Année', c:'text-center', f:(v,d)=>v||d.periode_construction||'-'},
+  {k:'numero_dpe', l:'N° DPE', c:'font-monospace small', t:'dpe', f:v=>v?`<a href="https://data.ademe.fr/datasets/dpe03existant/full?p=%2Fdata-fair%2Fembed%2Fdataset%2Fdpe03existant%2Ftable&q=${v}" target="_blank">${v}</a>`:'-'},
+  {k:'etiquette_dpe', l:'DPE', c:'text-center', f:v=>`<span class="badge border text-dark" style="background:${COLS[v]||COLS.Def};width:28px">${v||'-'}</span>`},
+  {k:'etiquette_ges', l:'GES', c:'text-center', t:'ges', f:v=>`<span class="badge border text-dark" style="background:${COLS[v]||COLS.Def};width:28px">${v||'-'}</span>`},
+  {k:'conso_5_usages_par_m2_ep', l:'Conso', c:'text-end font-monospace', t:'conso', f:v=>v?Math.round(v):'-'},
+  {k:'date_etablissement_dpe', l:'Date', c:'text-center', f:v=>v?new Date(v).toLocaleDateString():'-'}
+];
+
+let appData = [], sortState = {k:null,o:1};
+let map, markers;
+
+function init(){
+  const d=new Date(); $('dEnd').valueAsDate=d; d.setMonth(d.getMonth()-1); $('dStart').valueAsDate=d;
+  map = L.map('map', { fullscreenControl: true }).setView([46.6,1.9], 6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+  markers = L.layerGroup().addTo(map);
+
+  const thead = $('table').createTHead().insertRow();
+  FIELDS.forEach(fd=>{
+    if(fd.t) $('colToggles').innerHTML += `<li><label class="dropdown-item"><input type="checkbox" checked onchange="App.toggleCol('${fd.t}', this.checked)"> ${fd.l}</label></li>`;
+    const th = document.createElement('th');
+    th.className = 'sortable '+(fd.t||''); th.tabIndex=0; th.setAttribute('role','button'); th.textContent = fd.l;
+    th.dataset.key = fd.k;
+    th.addEventListener('pointerdown', ()=>App.sort(fd.k));
+    th.addEventListener('keydown', e=>{ if(e.key==='Enter' || e.key===' ') App.sort(fd.k); });
+    thead.appendChild(th);
+  });
+  thead.insertCell().className='text-center'; thead.lastElementChild.textContent='Map';
+
+  $('searchBtn').addEventListener('click', App.search);
+  document.querySelector('button[data-bs-target="#mapView"]').addEventListener('shown.bs.tab', ()=>setTimeout(()=>map.invalidateSize(),120));
+}
+
+function buildParams(){
+  const params = new URLSearchParams();
+  params.append('size', $('limit').value || 100);
+  const select = FIELDS.map(x=>x.k).join(',') + ',code_postal_ban,_geopoint,periode_construction';
+  params.append('select', select);
+
+  const postal = $('postal').value.split(/[\s,]+/).filter(Boolean);
+  const types = ['tApp','tMai','tImm'].filter(id=>$(id).checked).map(id=>$(id).value);
+  const grades = ['gA','gB','gC','gD','gE','gF','gG'].filter(id=>$(id).checked).map(id=>$(id).value);
+
+  const qs = [];
+  if(postal.length) qs.push(`(${postal.map(c=>`code_postal_brut:${c}`).join(' OR ')})`);
+  if(types.length) qs.push(`(${types.map(t=>`type_batiment:${t}`).join(' OR ')})`);
+  if(grades.length) qs.push(`(${grades.map(g=>`etiquette_dpe:${g}`).join(' OR ')})`);
+  if(qs.length) params.append('qs', qs.join(' AND '));
+
+  const extra = [
+    ['date_etablissement_dpe_gte', $('dStart').value],
+    ['date_etablissement_dpe_lte', $('dEnd').value],
+    ['surface_habitable_logement_gte', $('sMin').value],
+    ['surface_habitable_logement_lte', $('sMax').value]
   ];
+  extra.forEach(p=>{ if(p[1]) params.append(p[0], p[1]); });
 
-  let appData = [], sortState = {};
+  return params.toString();
+}
 
-  const App = {
-    init: () => {
-      const d = new Date(); $('dEnd').valueAsDate = d; d.setMonth(d.getMonth()-1); $('dStart').valueAsDate = d;
-      
-      App.map = L.map('map', { fullscreenControl: true }).setView([46.6, 1.9], 6);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(App.map);
-      App.markers = L.layerGroup().addTo(App.map);
-
-      // Fix map resize
-      document.querySelector('button[data-bs-target="#mapView"]').addEventListener('shown.bs.tab', () => {
-          setTimeout(() => { App.map.invalidateSize(); }, 100);
-      });
-
-      const thead = $('table').tHead.insertRow();
-      FIELDS.forEach(fd => {
-        if(fd.t) $('colToggles').innerHTML += `<li><label class="dropdown-item"><input type="checkbox" checked onchange="App.toggleCol('${fd.t}', this.checked)"> ${fd.l}</label></li>`;
-        
-        const th = document.createElement('th');
-        th.className = `sortable ${fd.t||''}`;
-        th.dataset.key = fd.k;
-        th.innerHTML = `<div class="d-flex align-items-center justify-content-between">
-            <span>${fd.l}</span><i class="bi bi-arrow-down-up ms-1 small"></i>
-        </div>`;
-        
-        // FIX: Use simple onclick to be robust, and ensure we capture the key correctly
-        th.onclick = function() { App.sort(fd.k); };
-        
-        thead.appendChild(th);
-      });
-      thead.innerHTML += '<th class="text-center">Map</th>';
-
-      $('searchBtn').onclick = App.search;
-    },
-
-    search: async () => {
-      $('msg').innerHTML = '<div class="spinner-border text-primary"></div>'; $('resBox').classList.add('d-none');
-      
-      const q = new URLSearchParams({ size: $('limit').value, select: FIELDS.map(x=>x.k).join(',')+',code_postal_ban,_geopoint,periode_construction' });
-      const add = (k, v) => v && q.append(k, v);
-      
-      const ps = $('postal').value.split(/[\s,]+/).filter(Boolean);
-      const types = ['tApp','tMai','tImm'].filter(id=>$(id).checked).map(id=>$(id).value);
-      const grades = ['gA','gB','gC','gD','gE','gF','gG'].filter(id=>$(id).checked).map(id=>$(id).value);
-      const qs = [];
-      if(ps.length) qs.push(`(${ps.map(c=>`code_postal_brut:${c}`).join(' OR ')})`);
-      if(types.length) qs.push(`(${types.map(t=>`type_batiment:${t}`).join(' OR ')})`);
-      if(grades.length) qs.push(`(${grades.map(g=>`etiquette_dpe:${g}`).join(' OR ')})`);
-      if(qs.length) q.append('qs', qs.join(' AND '));
-      
-      [['date_etablissement_dpe_gte', $('dStart').value], ['date_etablissement_dpe_lte', $('dEnd').value],
-       ['surface_habitable_logement_gte', $('sMin').value], ['surface_habitable_logement_lte', $('sMax').value]].forEach(p => add(...p));
-
-      $('badges').innerHTML = types.map(t=>`<span class="badge bg-info text-dark me-1">${t}</span>`).join('') + (ps[0] ? `<span class="badge bg-dark">${ps[0]}</span>` : '');
-
-      try {
-        const res = await fetch(`${C.api}?${q}`);
-        appData = (await res.json()).results || [];
-        
-        // Reset Visuals
-        sortState = {};
-        document.querySelectorAll('th.sortable').forEach(th => {
-             th.classList.remove('active-sort');
-             th.querySelector('i').className = 'bi bi-arrow-down-up ms-1 small';
-        });
-
-        App.render(); App.mapRender();
-        $('msg').classList.add('d-none'); $('resBox').classList.remove('d-none');
-      } catch(e) { $('msg').textContent = 'Erreur API'; }
-    },
-
-    render: () => {
-      $('count').textContent = appData.length + ' résultats';
-      $('table').tBodies[0].innerHTML = appData.map(d => `<tr>
-        ${FIELDS.map(f => `<td class="${f.c||''} ${f.t||''}" style="${f.s||''}">${f.f ? f.f(d[f.k], d) : (d[f.k]||'')}</td>`).join('')}
-        <td class="text-center"><button class="btn btn-sm btn-light text-primary" onclick="App.zoom('${d.numero_dpe}')"><i class="bi bi-geo"></i></button></td>
-      </tr>`).join('');
-    },
-
-    sort: (k) => {
-      // Safety check: don't sort empty data
-      if (!appData || appData.length === 0) return;
-
-      const o = sortState.k === k && sortState.o === 1 ? -1 : 1; 
-      sortState = {k, o};
-      
-      // FIX: Robust sorting that handles Null/Undefined and Strings
-      const getVal = (item) => {
-          let v = item[k];
-          if (v === null || v === undefined) return -Infinity; // Treat missing as lowest
-          return (typeof v === 'string') ? v.toLowerCase() : v;
-      };
-
-      appData.sort((a,b) => {
-          const va = getVal(a);
-          const vb = getVal(b);
-          if (va < vb) return -1 * o;
-          if (va > vb) return 1 * o;
-          return 0;
-      });
-
-      // Visual Update
-      document.querySelectorAll('th.sortable').forEach(th => {
-        const icon = th.querySelector('i');
-        th.classList.remove('active-sort');
-        icon.className = 'bi bi-arrow-down-up ms-1 small';
-        
-        if (th.dataset.key === k) {
-           th.classList.add('active-sort');
-           icon.className = `bi bi-sort-${o === 1 ? 'down' : 'up'} ms-1 small`;
-        }
-      });
-
+App = {
+  async search(){
+    $('msg').innerHTML = '<div class="spinner-border text-primary"></div>';
+    $('resBox').classList.add('d-none');
+    try{
+      const qs = buildParams();
+      const res = await fetch(`${API}?${qs}`);
+      const j = await res.json();
+      appData = j.results || [];
       App.render();
-    },
-
-    toggleCol: (cls, show) => {
-      document.querySelectorAll('.'+cls).forEach(el => el.classList.toggle('col-hidden', !show));
-    },
-
-    mapRender: () => {
-      App.markers.clearLayers(); const b = [];
-      appData.forEach(d => {
-        if(!d._geopoint) return;
-        const [lat, lng] = d._geopoint.split(',').map(Number);
-        const rows = FIELDS.slice(1).map(f => 
-          `<tr><td class="text-muted pe-2">${f.l}:</td><td class="fw-bold text-end">${f.f ? f.f(d[f.k], d) : (d[f.k]||'-')}</td></tr>`
-        ).join('');
-        const html = `<div class="fw-bold border-bottom mb-2 pb-1">${d.adresse_ban||'?'}</div><table class="table table-sm table-borderless m-0 small">${rows}</table>`;
-        const icon = (d.type_batiment||'').includes('ison') ? 'house-fill' : 'building';
-        const color = C.cols[d.etiquette_dpe] || '#ccc';
-        const m = L.marker([lat, lng], {
-          icon: L.divIcon({ html: `<div class="custom-pin" style="background:${color};width:30px;height:30px"><i class="bi bi-${icon}"></i></div>`, className:'' })
-        }).bindPopup(html);
-        m.did = d.numero_dpe; App.markers.addLayer(m); b.push([lat, lng]);
-      });
-      if(b.length) App.map.fitBounds(b);
-    },
-
-    zoom: (id) => {
-      const tab = new bootstrap.Tab(document.querySelector('button[data-bs-target="#mapView"]')); tab.show();
-      App.markers.eachLayer(l => { if(l.did === id) { App.map.setView(l.getLatLng(), 16); l.openPopup(); } });
+      App.mapRender();
+      $('msg').classList.add('d-none');
+      $('resBox').classList.remove('d-none');
+    }catch(e){
+      console.error(e);
+      $('msg').textContent = 'Erreur API — voir console';
+      $('resBox').classList.add('d-none');
     }
-  };
+  },
 
-  document.addEventListener('DOMContentLoaded', App.init);
+  render(){
+    $('count').textContent = appData.length + ' résultats';
+    const tbody = $('table').tBodies[0];
+    tbody.innerHTML = appData.map(d=>{
+      const cells = FIELDS.map(f=>{
+        const val = f.f ? f.f(d[f.k], d) : (d[f.k]||'-');
+        return `<td class="${f.c||''} ${f.t||''}" style="${f.s||''}">${val}</td>`;
+      }).join('');
+      return `<tr>${cells}<td class="text-center"><button class="btn btn-sm btn-light text-primary" data-dpe="${(d.numero_dpe||'')}"><i class="bi bi-geo"></i></button></td></tr>`;
+    }).join('');
+    $('table').tBodies[0].querySelectorAll('button[data-dpe]').forEach(b=>b.addEventListener('click', e=>App.zoom(e.currentTarget.dataset.dpe)));
+  },
+
+  sort(k){
+    const o = (sortState.k === k && sortState.o === 1) ? -1 : 1;
+    sortState = {k, o};
+    appData.sort((a,b)=>{
+      const A = (a[k] ?? '').toString();
+      const B = (b[k] ?? '').toString();
+      const cmp = A.localeCompare(B, undefined, {numeric:true, sensitivity:'base'});
+      return cmp * o;
+    });
+    App.render();
+  },
+
+  toggleCol(cls, show){
+    document.querySelectorAll('.'+cls).forEach(el => el.classList.toggle('col-hidden', !show));
+  },
+
+  mapRender(){
+    markers.clearLayers();
+    const bounds = [];
+    appData.forEach(d=>{
+      if(!d._geopoint) return;
+      const [lat, lng] = d._geopoint.split(',').map(Number);
+      if(isNaN(lat) || isNaN(lng)) return;
+      const rows = FIELDS.map(f=>`<tr><td class="text-muted pe-2">${f.l}:</td><td class="fw-bold text-end">${f.f ? f.f(d[f.k], d) : (d[f.k] || '-')}</td></tr>`).join('');
+      const html = `<div class="fw-bold border-bottom mb-2 pb-1">${d.adresse_ban||'?'}</div><table class="table table-sm table-borderless m-0 small">${rows}</table>`;
+      const iconName = (d.type_batiment||'').toLowerCase().includes('maison') ? 'house' : 'building';
+      const color = COLS[d.etiquette_dpe] || COLS.Def;
+      const m = L.marker([lat,lng], {
+        icon: L.divIcon({ html: `<div class="custom-pin" style="background:${color};width:34px;height:34px"><i class="bi bi-${iconName}"></i></div>`, className: '' })
+      }).bindPopup(html);
+      m.did = d.numero_dpe;
+      markers.addLayer(m);
+      bounds.push([lat,lng]);
+    });
+    if(bounds.length) map.fitBounds(bounds, {padding:[20,20]});
+  },
+
+  zoom(id){
+    const tab = new bootstrap.Tab(document.querySelector('button[data-bs-target="#mapView"]'));
+    tab.show();
+    markers.eachLayer(l => { if(l.did == id) { map.setView(l.getLatLng(), 16); l.openPopup(); } });
+  }
+};
+
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
