@@ -9,9 +9,12 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 <style>
-:root{--brand:#3b82f6} body{background:#f8f9fa;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial}
-#map{height:520px;border-radius:.5rem} .custom-pin{border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 6px rgba(0,0,0,.15)}
-th.sortable{cursor:pointer;user-select:none} .table-wrap{max-height:520px;overflow:auto}
+:root{--brand:#3b82f6} 
+body{background:#f8f9fa;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial}
+#map{height:520px;border-radius:.5rem} 
+.custom-pin{border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 6px rgba(0,0,0,.15)}
+th.sortable{cursor:pointer;user-select:none} 
+.table-wrap{max-height:520px;overflow:auto}
 .leaflet-control-fullscreen-button{margin:.25rem!important;background:#fff!important;border-radius:.25rem;box-shadow:0 2px 6px rgba(0,0,0,.2);}
 </style>
 </head>
@@ -27,11 +30,7 @@ th.sortable{cursor:pointer;user-select:none} .table-wrap{max-height:520px;overfl
     <form id="filters" class="row g-2" onsubmit="return false;">
       <div class="col-12 col-md-3"><label class="form-label small text-muted">CODE POSTAL</label><input id="postal" class="form-control form-control-sm" value="44600" placeholder="ex: 44000"></div>
       <div class="col-12 col-md-3"><label class="form-label small text-muted">TYPE</label>
-        <div class="d-flex gap-2">
-          <div class="form-check form-check-inline"><input type="checkbox" class="form-check-input type-filter" value="appartement" checked><label class="form-check-label">Appart.</label></div>
-          <div class="form-check form-check-inline"><input type="checkbox" class="form-check-input type-filter" value="maison" checked><label class="form-check-label">Maison</label></div>
-          <div class="form-check form-check-inline"><input type="checkbox" class="form-check-input type-filter" value="immeuble" checked><label class="form-check-label">Imm.</label></div>
-        </div>
+        <div class="d-flex gap-2" id="typeContainer"></div>
       </div>
       <div class="col-12 col-md-3"><label class="form-label small text-muted">DPE</label>
         <div class="d-flex gap-1 flex-wrap" id="grades"></div>
@@ -80,39 +79,65 @@ th.sortable{cursor:pointer;user-select:none} .table-wrap{max-height:520px;overfl
 const API='https://data.ademe.fr/data-fair/api/v1/datasets/dpe03existant/lines';
 const COLORS={A:'#319834',B:'#33cc31',C:'#cbfc34',D:'#fbfe06',E:'#fbcc04',F:'#f68e1e',G:'#ef1d26',Def:'#cbd5e1'};
 const FIELDS=[
-{k:'adresse_ban',l:'Adresse',c:'text-truncate',s:'max-width:220px'},
-{k:'type_batiment',l:'Type'},
-{k:'surface_habitable_logement',l:'Surf.',c:'text-end font-monospace',f:v=>v?Math.round(v)+' m²':'-'},
-{k:'annee_construction',l:'Année',c:'text-center',f:(v,d)=>v||d.periode_construction||'-'},
-{k:'numero_dpe',l:'N° DPE',c:'font-monospace small',t:'dpe',f:v=>v?`<a href="https://data.ademe.fr/datasets/dpe03existant/full?p=%2Fdata-fair%2Fembed%2Fdataset%2Fdpe03existant%2Ftable&q=${v}" target="_blank">${v}</a>`:'-'},
-{k:'etiquette_dpe',l:'DPE',c:'text-center',f:v=>`<span class="badge border text-dark" style="background:${COLORS[v]||COLORS.Def};width:28px">${v||'-'}</span>`},
-{k:'etiquette_ges',l:'GES',c:'text-center',t:'ges',f:v=>`<span class="badge border text-dark" style="background:${COLORS[v]||COLORS.Def};width:28px">${v||'-'}</span>`},
-{k:'conso_5_usages_par_m2_ep',l:'Conso',c:'text-end font-monospace',t:'conso',f:v=>v?Math.round(v):'-'},
-{k:'date_etablissement_dpe',l:'Date',c:'text-center',f:v=>v?new Date(v).toLocaleDateString():'-'}
+  {k:'adresse_ban',l:'Adresse',c:'text-truncate',s:'max-width:220px'},
+  {k:'type_batiment',l:'Type'},
+  {k:'surface_habitable_logement',l:'Surf.',c:'text-end font-monospace',f:v=>v?Math.round(v)+' m²':'-'},
+  {k:'annee_construction',l:'Année',c:'text-center',f:(v,d)=>v||d.periode_construction||'-'},
+  {k:'numero_dpe',l:'N° DPE',c:'font-monospace small',t:'dpe',f:v=>v?`<a href="https://data.ademe.fr/datasets/dpe03existant/full?p=%2Fdata-fair%2Fembed%2Fdataset%2Fdpe03existant%2Ftable&q=${v}" target="_blank">${v}</a>`:'-'},
+  {k:'etiquette_dpe',l:'DPE',c:'text-center',f:v=>renderBadge({ type:'badge', value:v })},
+  {k:'etiquette_ges',l:'GES',c:'text-center',t:'ges',f:v=>renderBadge({ type:'badge', value:v })},
+  {k:'conso_5_usages_par_m2_ep',l:'Conso',c:'text-end font-monospace',t:'conso',f:v=>v?Math.round(v):'-'},
+  {k:'date_etablissement_dpe',l:'Date',c:'text-center',f:v=>v?new Date(v).toLocaleDateString():'-'}
 ];
+
 let appData=[],sortState={k:null,o:1},map,markers;
 
 function $(id){return document.getElementById(id);}
+
+// ----------------- Helper -----------------
+function renderBadge({ type, value, size = 28, colorMap = COLORS, iconName }) {
+  const color = colorMap[value] || colorMap.Def;
+  if (type === 'badge') {
+    return `<span class="badge border text-dark" style="background:${color};width:${size}px">${value||'-'}</span>`;
+  }
+  if (type === 'pin') {
+    return `<div class="custom-pin" style="background:${color};width:${size}px;height:${size}px"><i class="bi bi-${iconName||'building'}"></i></div>`;
+  }
+  return '-';
+}
+
+// ----------------- Initialization -----------------
 function init(){
-  const d=new Date(); $('dEnd').valueAsDate=d; d.setMonth(d.getMonth()-1); $('dStart').valueAsDate=d;
-  const gradeContainer=$('grades');
-  ['A','B','C','D','E','F','G'].forEach(g=>{
-    const input=document.createElement('input'); input.type='checkbox'; input.className='btn-check grade-filter';
-    input.id='g'+g; input.value=g; input.checked=true;
-    const label=document.createElement('label'); label.className=`btn btn-outline-${['A','B','C'].includes(g)?'success':['D','E'].includes(g)?'warning':'danger'} btn-sm`;
-    label.htmlFor=input.id; label.textContent=g;
-    gradeContainer.append(input,label);
+  const today=new Date(); $('dEnd').valueAsDate=today; today.setMonth(today.getMonth()-1); $('dStart').valueAsDate=today;
+
+  // Types
+  ['Appartement','Maison','Immeuble'].forEach(t=>{
+    const id='t'+t;
+    const input=document.createElement('input'); input.type='checkbox'; input.className='btn-check type-filter'; input.id=id; input.value=t.toLowerCase(); input.checked=true;
+    const label=document.createElement('label'); label.className='btn btn-outline-primary btn-sm'; label.htmlFor=id; label.textContent=t;
+    $('typeContainer').append(input,label);
   });
 
+  // Grades
+  ['A','B','C','D','E','F','G'].forEach(g=>{
+    const input=document.createElement('input'); input.type='checkbox'; input.className='btn-check grade-filter'; input.id='g'+g; input.value=g; input.checked=true;
+    const label=document.createElement('label'); 
+    label.className=`btn btn-outline-${['A','B','C'].includes(g)?'success':['D','E'].includes(g)?'warning':'danger'} btn-sm`;
+    label.htmlFor=input.id; label.textContent=g;
+    $('grades').append(input,label);
+  });
+
+  // Map
   map=L.map('map',{fullscreenControl:true}).setView([46.6,1.9],6);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
   markers=L.layerGroup().addTo(map);
 
+  // Table header
   const thead=$('table').createTHead().insertRow();
   FIELDS.forEach(f=>{
     if(f.t) $('colToggles').innerHTML+=`<li><label class="dropdown-item"><input type="checkbox" checked onchange="App.toggleCol('${f.t}', this.checked)"> ${f.l}</label></li>`;
     const th=document.createElement('th'); th.className='sortable '+(f.t||''); th.tabIndex=0; th.setAttribute('role','button'); th.textContent=f.l;
-    th.dataset.key=f.k; th.addEventListener('pointerdown',()=>App.sort(f.k));
+    th.addEventListener('click',()=>App.sort(f.k));
     th.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ') App.sort(f.k);});
     thead.appendChild(th);
   });
@@ -122,68 +147,72 @@ function init(){
   document.querySelector('button[data-bs-target="#mapView"]').addEventListener('shown.bs.tab',()=>setTimeout(()=>map.invalidateSize(),120));
 }
 
+// ----------------- API & Params -----------------
 function buildParams(){
   const params={size:$('limit').value||100,select:FIELDS.map(f=>f.k).join(',')+',code_postal_ban,_geopoint,periode_construction'};
-  const postal=[...$('postal').value.split(/[\s,]+/)].filter(Boolean);
+  const postal=$('postal').value.split(/[\s,]+/).filter(Boolean);
   const types=[...document.querySelectorAll('.type-filter:checked')].map(e=>e.value);
   const grades=[...document.querySelectorAll('.grade-filter:checked')].map(e=>e.value);
   const qs=[postal.length?`(${postal.map(c=>`code_postal_brut:${c}`).join(' OR ')})`:null,
             types.length?`(${types.map(t=>`type_batiment:${t}`).join(' OR ')})`:null,
             grades.length?`(${grades.map(g=>`etiquette_dpe:${g}`).join(' OR ')})`:null].filter(Boolean).join(' AND ');
   if(qs) params.qs=qs;
-  [['date_etablissement_dpe_gte','dStart'],['date_etablissement_dpe_lte','dEnd'],['surface_habitable_logement_gte','sMin'],['surface_habitable_logement_lte','sMax']].forEach(([p,id])=>{if($(id).value) params[p]=$(id).value;});
+  [['date_etablissement_dpe_gte','dStart'],['date_etablissement_dpe_lte','dEnd'],['surface_habitable_logement_gte','sMin'],['surface_habitable_logement_lte','sMax']].forEach(([p,id])=>{$(id).value&&(params[p]=$(id).value);});
   return new URLSearchParams(params).toString();
 }
 
+// ----------------- App -----------------
 const App={
   async search(){
     $('msg').innerHTML='<div class="spinner-border text-primary"></div>'; $('resBox').classList.add('d-none');
     try{
       const res=await fetch(`${API}?${buildParams()}`);
       if(!res.ok) throw new Error(res.statusText);
-      const data=await res.json();
-      appData=data.results||[];
-      App.render(); App.mapRender();
+      appData=(await res.json()).results||[];
+      App.renderData();
       $('msg').classList.add('d-none'); $('resBox').classList.remove('d-none');
     }catch(e){console.error(e); $('msg').textContent='Erreur API — voir console'; $('resBox').classList.add('d-none');}
   },
 
-  render(){
+  renderData(){
     $('count').textContent=appData.length+' résultats';
     const tbody=$('table').tBodies[0]; tbody.innerHTML='';
+    markers.clearLayers(); const bounds=[];
+
     appData.forEach(d=>{
+      // Table row
       const row=document.createElement('tr');
-      row.innerHTML=FIELDS.map(f=>`<td class="${[f.c,f.t].filter(Boolean).join(' ')}" style="${f.s||''}">${(d[f.k]!==undefined&&d[f.k]!==null&&d[f.k]!=='')? (f.f?f.f(d[f.k],d):d[f.k]) : '-'}</td>`).join('')+
+      row.innerHTML=FIELDS.map(f=>`<td class="${[f.c,f.t].filter(Boolean).join(' ')}" style="${f.s||''}">${(d[f.k]!=null&&d[f.k]!=='')?(f.f?f.f(d[f.k],d):d[f.k]) : '-'}</td>`).join('')+
                       `<td class="text-center"><button class="btn btn-sm btn-light text-primary" data-dpe="${d.numero_dpe||''}"><i class="bi bi-geo"></i></button></td>`;
       tbody.appendChild(row);
+
+      // Map marker
+      if(d._geopoint){
+        const [lat,lng]=d._geopoint.split(',').map(Number);
+        if(!isNaN(lat)&&!isNaN(lng)){
+          const popup=`<div class="fw-bold border-bottom mb-2 pb-1">${d.adresse_ban||'?'}</div><table class="table table-sm table-borderless m-0 small">${FIELDS.map(f=>`<tr><td class="text-muted pe-2">${f.l}:</td><td class="fw-bold text-end">${(d[f.k]!=null&&d[f.k]!=='')?(f.f?f.f(d[f.k],d):d[f.k]) : '-'}</td></tr>`).join('')}</table>`;
+          const iconName=d.type_batiment.toLowerCase().includes('maison')?'house':'building';
+          const m=L.marker([lat,lng],{icon:L.divIcon({html:renderBadge({ type:'pin', value:d.etiquette_dpe, iconName, size:34 })})}).bindPopup(popup);
+          m.did=d.numero_dpe; markers.addLayer(m); bounds.push([lat,lng]);
+        }
+      }
     });
+
+    // Attach button listeners
     tbody.querySelectorAll('button[data-dpe]').forEach(b=>b.addEventListener('click',e=>App.zoom(e.currentTarget.dataset.dpe)));
+    if(bounds.length) map.fitBounds(bounds,{padding:[20,20]});
   },
 
   sort(k){
     const o=(sortState.k===k && sortState.o===1)?-1:1; sortState={k,o};
     appData.sort((a,b)=>{
-      const [A,B]=[a[k],b[k]]; if(A===undefined||A===null) return 1*o; if(B===undefined||B===null) return -1*o;
+      const [A,B]=[a[k],b[k]]; if(A==null) return 1*o; if(B==null) return -1*o;
       return (typeof A==='number'?A-B:A.toString().localeCompare(B,undefined,{numeric:true,sensitivity:'base'}))*o;
     });
-    App.render();
+    App.renderData();
   },
 
   toggleCol(cls,show){document.querySelectorAll('.'+cls).forEach(e=>e.classList.toggle('d-none',!show));},
-
-  mapRender(){
-    markers.clearLayers(); const bounds=[];
-    appData.forEach(d=>{
-      if(!d._geopoint) return;
-      const [lat,lng]=d._geopoint.split(',').map(Number); if(isNaN(lat)||isNaN(lng)) return;
-      const popup=`<div class="fw-bold border-bottom mb-2 pb-1">${d.adresse_ban||'?'}</div><table class="table table-sm table-borderless m-0 small">${FIELDS.map(f=>`<tr><td class="text-muted pe-2">${f.l}:</td><td class="fw-bold text-end">${(d[f.k]!==undefined&&d[f.k]!==null&&d[f.k]!=='')? (f.f?f.f(d[f.k],d):d[f.k]) : '-'}</td></tr>`).join('')}</table>`;
-      const iconName=d.type_batiment.toLowerCase().includes('maison')?'house':'building';
-      const color=COLORS[d.etiquette_dpe]||COLORS.Def;
-      const m=L.marker([lat,lng],{icon:L.divIcon({html:`<div class="custom-pin" style="background:${color};width:34px;height:34px"><i class="bi bi-${iconName}"></i></div>`})}).bindPopup(popup);
-      m.did=d.numero_dpe; markers.addLayer(m); bounds.push([lat,lng]);
-    });
-    if(bounds.length) map.fitBounds(bounds,{padding:[20,20]});
-  },
 
   zoom(id){
     new bootstrap.Tab(document.querySelector('button[data-bs-target="#mapView"]')).show();
