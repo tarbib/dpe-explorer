@@ -1,251 +1,2547 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Observatoire DPE - Explorer</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-<style>
-:root{color-scheme:light;--bg:#eef3fb;--bg-accent:rgba(59,130,246,.18);--surface:#fff;--surface-2:#f7f9fc;--surface-3:#eef3fb;--border:#d9e3f0;--border-strong:#c4d3e8;--text:#132238;--muted:#607087;--primary:#2563eb;--primary-soft:rgba(37,99,235,.12);--success:#15803d;--warning:#ca8a04;--danger:#dc2626;--shadow-soft:0 10px 24px rgba(15,23,42,.08);--focus:0 0 0 .25rem rgba(37,99,235,.22);--table-head:#edf3fb;--row-hover:#f3f7fd;--row-active:#dbeafe;--tab-bg:#f4f7fb;--pill-bg:#edf3fb;--pill-text:#294766;--input-bg:#fff;--map-control-bg:#fff;--popup-bg:#fff;--popup-text:#132238}
-html[data-theme="dark"]{color-scheme:dark;--bg:#0b1220;--bg-accent:rgba(37,99,235,.2);--surface:#101a2b;--surface-2:#162234;--surface-3:#1a2940;--border:#27364d;--border-strong:#35506f;--text:#eef4ff;--muted:#9fb0c9;--primary:#60a5fa;--primary-soft:rgba(96,165,250,.16);--success:#22c55e;--warning:#fbbf24;--danger:#f87171;--shadow-soft:0 10px 24px rgba(2,8,23,.28);--focus:0 0 0 .25rem rgba(96,165,250,.28);--table-head:#182538;--row-hover:#162235;--row-active:#1f3250;--tab-bg:#162235;--pill-bg:#1a2a42;--pill-text:#dce8ff;--input-bg:#0f1827;--map-control-bg:#162235;--popup-bg:#101a2b;--popup-text:#eef4ff}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--text);background-color:var(--bg);background-image:radial-gradient(circle at top left,var(--bg-accent),transparent 35%),linear-gradient(180deg,var(--surface-3),var(--bg));background-repeat:no-repeat;background-size:100% 100%,100% 100%;background-attachment:fixed;color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:var(--primary)}.page-shell{max-width:1280px;margin:0 auto;padding:24px 16px 40px}.panel{background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow-soft)}.app-header,.toolbar,.section-head,.summary-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap}.app-header{padding:1.25rem;margin-bottom:1rem}.brand{display:flex;align-items:flex-start;gap:1rem}.brand-icon{width:56px;height:56px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(145deg,var(--primary),#1d4ed8);color:#fff;flex:0 0 auto}.eyebrow{margin:0 0 .35rem;color:var(--primary);font-size:.8rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.brand h1{margin:0 0 .25rem;font-size:1.55rem;line-height:1.1}.lede,.helper,.summary-subtitle,.toolbar p,.state-copy,.section-head p,.legend-note,.map-note,.muted{color:var(--muted)}.lede,.toolbar p,.state-copy,.section-head p{margin:0}.header-actions,.toolbar-actions{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap}.theme-switch,.view-switch{display:inline-flex;gap:.35rem;padding:.35rem;border-radius:999px;background:var(--tab-bg);border:1px solid var(--border)}.theme-switch .btn,.view-switch .btn{border:none;border-radius:999px;color:var(--muted);background:transparent;font-weight:600}.theme-switch .btn.active,.view-switch .btn.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow-soft)}.filter-panel,.content-panel{padding:1.1rem}.filter-panel{margin-bottom:1rem}.filter-groups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}.filter-group{padding:1rem;border-radius:18px;border:1px solid var(--border);background:linear-gradient(180deg,var(--surface),var(--surface-2))}.group-title,.summary-title,.legend-title,.state-title,.section-head h3,.toolbar h2{margin:0}.group-title{display:flex;align-items:center;gap:.55rem;margin-bottom:.85rem;font-size:1rem}.group-title i,.summary-chip i{color:var(--primary)}.stack-sm{display:flex;flex-direction:column;gap:.75rem}.toggle-row,.summary-chips,.legend-row{display:flex;flex-wrap:wrap;gap:.5rem}.toggle-row .btn{border-radius:999px;font-weight:600}.form-label{color:var(--muted);font-weight:600;font-size:.82rem;letter-spacing:.02em}.form-control,.form-select,.dropdown-menu{background:var(--input-bg);border-color:var(--border);color:var(--text)}.form-control::placeholder{color:color-mix(in srgb,var(--muted) 75%,transparent)}.form-control:focus,.form-select:focus,.btn:focus,.btn-check:focus + .btn,.sort-trigger:focus,.dropdown-item input:focus{box-shadow:var(--focus)}.action-stack{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}.action-stack .btn-primary{grid-column:1 / -1}.summary-panel{margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)}.summary-header{margin-bottom:.6rem}.summary-title{font-size:.92rem;font-weight:700}.summary-chip,.count-pill{display:inline-flex;align-items:center;gap:.45rem;border-radius:999px;background:var(--pill-bg);color:var(--pill-text);padding:.5rem .8rem;font-weight:700}.summary-chip{padding:.45rem .7rem;font-size:.86rem;font-weight:500}.toolbar{padding:1rem 1.1rem;margin-bottom:1rem}.toolbar h2{font-size:1.08rem}.state-box{display:flex;align-items:flex-start;gap:1rem;padding:1rem 1.1rem;margin-bottom:1rem;border-left:4px solid var(--primary)}.state-icon{width:48px;height:48px;display:grid;place-items:center;border-radius:14px;background:var(--primary-soft);color:var(--primary);font-size:1.2rem;flex:0 0 auto}.state-box[data-kind="success"]{border-left-color:var(--success)}.state-box[data-kind="success"] .state-icon{background:color-mix(in srgb,var(--success) 16%,transparent);color:var(--success)}.state-box[data-kind="warning"]{border-left-color:var(--warning)}.state-box[data-kind="warning"] .state-icon{background:color-mix(in srgb,var(--warning) 18%,transparent);color:var(--warning)}.state-box[data-kind="error"]{border-left-color:var(--danger)}.state-box[data-kind="error"] .state-icon{background:color-mix(in srgb,var(--danger) 18%,transparent);color:var(--danger)}.table-wrap{max-height:560px;overflow:auto;border:1px solid var(--border);border-radius:16px;background:var(--surface)}.table{--bs-table-bg:transparent;--bs-table-color:var(--text);--bs-table-hover-bg:var(--row-hover);--bs-table-hover-color:var(--text);margin-bottom:0}.table thead th{position:sticky;top:0;z-index:2;background:var(--table-head);border-bottom-color:var(--border);padding:.75rem;white-space:nowrap}.table td{border-color:var(--border);padding:.7rem .75rem;vertical-align:middle}.table tbody tr.selected-row td{background:var(--row-active)}.cell-primary{font-weight:600}.cell-secondary{color:var(--muted)}.cell-address{max-width:280px}.sort-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:.75rem;border:none;background:none;color:inherit;padding:0;font:inherit;text-align:left}.sort-icon{color:var(--muted)}.map-wrap{position:relative}#map{height:560px;border-radius:18px;border:1px solid var(--border);overflow:hidden}.map-legend{position:absolute;top:14px;right:14px;z-index:450;width:min(260px,calc(100% - 28px));padding:.8rem .9rem;border-radius:16px;border:1px solid var(--border);background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(10px);box-shadow:var(--shadow-soft)}.grade-badge{display:inline-flex;align-items:center;justify-content:center;min-width:30px;min-height:30px;padding:0 .5rem;border-radius:999px;font-weight:800;border:1px solid rgba(255,255,255,.22);box-shadow:inset 0 0 0 1px rgba(0,0,0,.05)}.custom-pin{border-radius:50%;border:2px solid rgba(255,255,255,.88);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(15,23,42,.18)}.leaflet-control-fullscreen-button,.leaflet-bar a{background:var(--map-control-bg)!important;color:var(--text)!important;border-bottom-color:var(--border)!important}.leaflet-bar{border-color:var(--border)!important;box-shadow:var(--shadow-soft)!important}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--popup-bg);color:var(--popup-text)}.popup-grid{display:grid;grid-template-columns:minmax(110px,auto) 1fr;gap:.4rem .75rem;font-size:.88rem}.popup-grid dt{color:var(--muted);margin:0}.popup-grid dd{margin:0;text-align:right;font-weight:700}.dropdown-menu{min-width:220px;padding:.45rem;box-shadow:var(--shadow-soft)}.dropdown-item{color:var(--text);border-radius:10px;padding:.45rem .55rem}.dropdown-item:hover{background:var(--surface-2)}.empty-panel{display:flex;align-items:center;justify-content:center;min-height:220px;text-align:center;color:var(--muted);border:1px dashed var(--border-strong);border-radius:18px;background:var(--surface-2)}.empty-panel i{font-size:2rem;color:var(--primary)}.btn-soft{background:var(--surface-2);border:1px solid var(--border);color:var(--text)}.btn-soft:hover,.btn-soft:focus{background:var(--surface-3);border-color:var(--border-strong);color:var(--text)}.spinner-wrap{display:inline-flex;align-items:center;gap:.65rem}@media (max-width:991.98px){.filter-groups{grid-template-columns:1fr}.app-header{flex-direction:column}}@media (max-width:767.98px){.page-shell{padding-inline:12px;padding-top:16px}.brand,.toolbar,.section-head{flex-direction:column}.action-stack{grid-template-columns:1fr}.theme-switch,.view-switch{width:100%;justify-content:space-between}.theme-switch .btn,.view-switch .btn{flex:1 1 0}#map{height:460px}}
-/* Overrides to reduce visual clutter and align DPE filter colors with result badges */
-.filter-panel{padding:.95rem}
-.filter-groups{gap:.75rem}
-.filter-group{padding:.85rem;background:var(--surface);box-shadow:none}
-.group-title{margin-bottom:.65rem;font-size:.95rem}
-.helper{font-size:.8rem}
-.summary-panel{margin-top:.85rem;padding-top:.85rem}
-.summary-header{margin-bottom:.35rem}
-.table-wrap{max-height:72vh;min-height:560px}
-.summary-subtitle{display:none}
-.summary-title{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.summary-chip{padding:.35rem .6rem}
-.toolbar{padding:.85rem 1rem}
-.toolbar h2{font-size:1rem}
-#resultsMeta{font-size:.92rem}
-.state-box{padding:.8rem 1rem}
-.state-icon{width:40px;height:40px;font-size:1rem}
-.count-pill{padding:.42rem .7rem}
-.theme-switch,.view-switch{gap:.25rem}
-.table thead th{text-align:center;vertical-align:middle}
-.sort-trigger{justify-content:center;gap:.5rem;text-align:center}
-.info-trigger{display:inline-flex;align-items:center;justify-content:center;width:1rem;height:1rem;margin-left:.3rem;border:none;background:none;color:var(--muted);padding:0;vertical-align:middle}
-.info-trigger:hover,.info-trigger:focus{color:var(--primary)}
-.th-label{display:inline-flex;align-items:center;gap:.2rem;white-space:nowrap}
-.grade-pill{border-radius:999px;border:1px solid var(--grade-color);background:transparent;color:var(--grade-color)!important;opacity:1;transition:background-color .15s ease,color .15s ease,transform .15s ease,box-shadow .15s ease}
-.btn-check:checked + .grade-pill{background:var(--grade-color);color:var(--grade-text)!important;transform:translateY(-1px);box-shadow:0 6px 16px color-mix(in srgb,var(--grade-color) 24%, transparent)}
-.btn-check:focus + .grade-pill{box-shadow:var(--focus)}
-.btn-check:not(:checked) + .grade-pill{box-shadow:none}
-@media (max-width:991.98px){.table-wrap{max-height:68vh;min-height:480px}}
-@media (max-width:767.98px){.header-actions,.toolbar-actions{width:100%}.theme-switch,.view-switch{width:100%;justify-content:space-between}.table-wrap{max-height:62vh;min-height:420px}}
-</style>
-</head>
-<body>
-<div class="page-shell">
-  <header class="panel app-header">
-    <div class="brand">
-      <div class="brand-icon" aria-hidden="true"><i class="bi bi-building-check fs-3"></i></div>
-      <div>
-        <p class="eyebrow">Donn&eacute;es ADEME</p>
-        <h1>Observatoire DPE</h1>
-        <p class="lede">Explorer rapidement les DPE par zone, filtrer les logements utiles et passer de la liste &agrave; la carte sans perdre le contexte.</p>
-      </div>
-    </div>
-    <div class="header-actions">
-      <div class="theme-switch" role="group" aria-label="Choix du theme">
-        <button type="button" class="btn btn-sm" data-theme-mode="light">Clair</button>
-        <button type="button" class="btn btn-sm" data-theme-mode="dark">Sombre</button>
-        <button type="button" class="btn btn-sm" data-theme-mode="auto">Auto</button>
-      </div>
-    </div>
-  </header>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Observatoire DPE - Signaux vendeurs</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #eef3fb;
+        --bg-accent: rgba(59, 130, 246, 0.18);
+        --surface: #fff;
+        --surface-2: #f7f9fc;
+        --surface-3: #eef3fb;
+        --border: #d9e3f0;
+        --border-strong: #c4d3e8;
+        --text: #132238;
+        --muted: #607087;
+        --primary: #2563eb;
+        --primary-soft: rgba(37, 99, 235, 0.12);
+        --success: #15803d;
+        --warning: #ca8a04;
+        --danger: #dc2626;
+        --shadow-soft: 0 10px 24px rgba(15, 23, 42, 0.08);
+        --focus: 0 0 0 0.25rem rgba(37, 99, 235, 0.22);
+        --table-head: #edf3fb;
+        --row-hover: #f3f7fd;
+        --row-active: #dbeafe;
+        --tab-bg: #f4f7fb;
+        --pill-bg: #edf3fb;
+        --pill-text: #294766;
+        --input-bg: #fff;
+        --map-control-bg: #fff;
+        --popup-bg: #fff;
+        --popup-text: #132238;
+      }
+      html[data-theme="dark"] {
+        color-scheme: dark;
+        --bg: #0b1220;
+        --bg-accent: rgba(37, 99, 235, 0.2);
+        --surface: #101a2b;
+        --surface-2: #162234;
+        --surface-3: #1a2940;
+        --border: #27364d;
+        --border-strong: #35506f;
+        --text: #eef4ff;
+        --muted: #9fb0c9;
+        --primary: #60a5fa;
+        --primary-soft: rgba(96, 165, 250, 0.16);
+        --success: #22c55e;
+        --warning: #fbbf24;
+        --danger: #f87171;
+        --shadow-soft: 0 10px 24px rgba(2, 8, 23, 0.28);
+        --focus: 0 0 0 0.25rem rgba(96, 165, 250, 0.28);
+        --table-head: #182538;
+        --row-hover: #162235;
+        --row-active: #1f3250;
+        --tab-bg: #162235;
+        --pill-bg: #1a2a42;
+        --pill-text: #dce8ff;
+        --input-bg: #0f1827;
+        --map-control-bg: #162235;
+        --popup-bg: #101a2b;
+        --popup-text: #eef4ff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--text);
+        background-color: var(--bg);
+        background-image:
+          radial-gradient(
+            circle at top left,
+            var(--bg-accent),
+            transparent 35%
+          ),
+          linear-gradient(180deg, var(--surface-3), var(--bg));
+        background-repeat: no-repeat;
+        background-size:
+          100% auto,
+          100% auto;
+        background-attachment: scroll;
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+      a {
+        color: var(--primary);
+      }
+      .page-shell {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 24px 16px 40px;
+      }
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        box-shadow: var(--shadow-soft);
+      }
+      .app-header,
+      .toolbar,
+      .section-head,
+      .summary-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+      .app-header {
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+      }
+      .brand {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      .brand-icon {
+        width: 56px;
+        height: 56px;
+        display: grid;
+        place-items: center;
+        border-radius: 16px;
+        background: linear-gradient(145deg, var(--primary), #1d4ed8);
+        color: #fff;
+        flex: 0 0 auto;
+      }
+      .eyebrow {
+        margin: 0 0 0.35rem;
+        color: var(--primary);
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .brand h1 {
+        margin: 0 0 0.25rem;
+        font-size: 1.55rem;
+        line-height: 1.1;
+      }
+      .lede,
+      .helper,
+      .summary-subtitle,
+      .toolbar p,
+      .state-copy,
+      .section-head p,
+      .map-note,
+      .muted {
+        color: var(--muted);
+      }
+      .lede,
+      .toolbar p,
+      .state-copy,
+      .section-head p {
+        margin: 0;
+      }
+      .header-actions,
+      .toolbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        flex-wrap: wrap;
+      }
+      .theme-switch,
+      .view-switch {
+        display: inline-flex;
+        gap: 0.35rem;
+        padding: 0.35rem;
+        border-radius: 999px;
+        background: var(--tab-bg);
+        border: 1px solid var(--border);
+      }
+      .theme-switch .btn,
+      .view-switch .btn {
+        border: none;
+        border-radius: 999px;
+        color: var(--muted);
+        background: transparent;
+        font-weight: 600;
+      }
+      .theme-switch .btn.active,
+      .view-switch .btn.active {
+        background: var(--surface);
+        color: var(--text);
+        box-shadow: var(--shadow-soft);
+      }
+      .filter-panel,
+      .content-panel {
+        padding: 1.1rem;
+      }
+      .filter-panel {
+        margin-bottom: 1rem;
+      }
+      .filter-groups {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+      }
+      .filter-group {
+        padding: 1rem;
+        border-radius: 18px;
+        border: 1px solid var(--border);
+        background: linear-gradient(180deg, var(--surface), var(--surface-2));
+      }
+      .group-title,
+      .summary-title,
+      .state-title,
+      .section-head h3,
+      .toolbar h2 {
+        margin: 0;
+      }
+      .group-title {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        margin-bottom: 0.85rem;
+        font-size: 1rem;
+      }
+      .group-title i,
+      .summary-chip i {
+        color: var(--primary);
+      }
+      .stack-sm {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .toggle-row,
+      .summary-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .toggle-row .btn {
+        border-radius: 999px;
+        font-weight: 600;
+      }
+      .form-label {
+        color: var(--muted);
+        font-weight: 600;
+        font-size: 0.82rem;
+        letter-spacing: 0.02em;
+      }
+      .form-control,
+      .form-select,
+      .dropdown-menu {
+        background: var(--input-bg);
+        border-color: var(--border);
+        color: var(--text);
+      }
+      .form-control::placeholder {
+        color: color-mix(in srgb, var(--muted) 75%, transparent);
+      }
+      .form-control:focus,
+      .form-select:focus,
+      .btn:focus,
+      .btn-check:focus + .btn,
+      .sort-trigger:focus,
+      .dropdown-item input:focus {
+        box-shadow: var(--focus);
+      }
+      .action-stack {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.65rem;
+      }
+      .action-stack .btn-primary {
+        grid-column: 1 / -1;
+      }
+      .summary-panel {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+      }
+      .summary-header {
+        margin-bottom: 0.6rem;
+      }
+      .summary-title {
+        font-size: 0.92rem;
+        font-weight: 700;
+      }
+      .summary-chip,
+      .count-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        border-radius: 999px;
+        background: var(--pill-bg);
+        color: var(--pill-text);
+        padding: 0.5rem 0.8rem;
+        font-weight: 700;
+      }
+      .summary-chip {
+        padding: 0.45rem 0.7rem;
+        font-size: 0.86rem;
+        font-weight: 500;
+      }
+      .toolbar {
+        padding: 1rem 1.1rem;
+        margin-bottom: 1rem;
+      }
+      .toolbar h2 {
+        font-size: 1.08rem;
+      }
+      .state-box {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1rem 1.1rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--primary);
+      }
+      .state-icon {
+        width: 48px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        border-radius: 14px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-size: 1.2rem;
+        flex: 0 0 auto;
+      }
+      .state-box[data-kind="success"] {
+        border-left-color: var(--success);
+      }
+      .state-box[data-kind="success"] .state-icon {
+        background: color-mix(in srgb, var(--success) 16%, transparent);
+        color: var(--success);
+      }
+      .state-box[data-kind="warning"] {
+        border-left-color: var(--warning);
+      }
+      .state-box[data-kind="warning"] .state-icon {
+        background: color-mix(in srgb, var(--warning) 18%, transparent);
+        color: var(--warning);
+      }
+      .state-box[data-kind="error"] {
+        border-left-color: var(--danger);
+      }
+      .state-box[data-kind="error"] .state-icon {
+        background: color-mix(in srgb, var(--danger) 18%, transparent);
+        color: var(--danger);
+      }
+      .table-wrap {
+        max-height: 560px;
+        overflow: auto;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: var(--surface);
+      }
+      .table {
+        --bs-table-bg: transparent;
+        --bs-table-color: var(--text);
+        --bs-table-hover-bg: var(--row-hover);
+        --bs-table-hover-color: var(--text);
+        margin-bottom: 0;
+      }
+      .table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: var(--table-head);
+        border-bottom-color: var(--border);
+        padding: 0.75rem;
+        white-space: nowrap;
+      }
+      .table td {
+        border-color: var(--border);
+        padding: 0.7rem 0.75rem;
+        vertical-align: middle;
+      }
+      .table tbody tr.selected-row td {
+        background: var(--row-active);
+      }
+      .cell-primary {
+        font-weight: 600;
+      }
+      .cell-secondary {
+        color: var(--muted);
+      }
+      .cell-address {
+        max-width: 280px;
+      }
+      .sort-trigger {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        border: none;
+        background: none;
+        color: inherit;
+        padding: 0;
+        font: inherit;
+        text-align: left;
+      }
+      .sort-icon {
+        color: var(--muted);
+      }
+      #map {
+        height: 560px;
+        border-radius: 18px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+      }
+      .grade-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 30px;
+        min-height: 30px;
+        padding: 0 0.5rem;
+        border-radius: 999px;
+        font-weight: 800;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+      }
+      .custom-pin {
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.88);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.18);
+      }
+      .leaflet-control-fullscreen-button,
+      .leaflet-bar a {
+        background: var(--map-control-bg) !important;
+        color: var(--text) !important;
+        border-bottom-color: var(--border) !important;
+      }
+      .leaflet-bar {
+        border-color: var(--border) !important;
+        box-shadow: var(--shadow-soft) !important;
+      }
+      .leaflet-popup-content-wrapper,
+      .leaflet-popup-tip {
+        background: var(--popup-bg);
+        color: var(--popup-text);
+      }
+      .popup-grid {
+        display: grid;
+        grid-template-columns: minmax(110px, auto) 1fr;
+        gap: 0.4rem 0.75rem;
+        font-size: 0.88rem;
+      }
+      .popup-grid dt {
+        color: var(--muted);
+        margin: 0;
+      }
+      .popup-grid dd {
+        margin: 0;
+        text-align: right;
+        font-weight: 700;
+      }
+      .dropdown-menu {
+        min-width: 220px;
+        padding: 0.45rem;
+        box-shadow: var(--shadow-soft);
+      }
+      .dropdown-item {
+        color: var(--text);
+        border-radius: 10px;
+        padding: 0.45rem 0.55rem;
+      }
+      .dropdown-item:hover {
+        background: var(--surface-2);
+      }
+      .empty-panel {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 220px;
+        text-align: center;
+        color: var(--muted);
+        border: 1px dashed var(--border-strong);
+        border-radius: 18px;
+        background: var(--surface-2);
+      }
+      .empty-panel i {
+        font-size: 2rem;
+        color: var(--primary);
+      }
+      .btn-soft {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        color: var(--text);
+      }
+      .btn-soft:hover,
+      .btn-soft:focus {
+        background: var(--surface-3);
+        border-color: var(--border-strong);
+        color: var(--text);
+      }
+      .spinner-wrap {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.65rem;
+      }
+      @media (max-width: 991.98px) {
+        .filter-groups {
+          grid-template-columns: 1fr;
+        }
+        .app-header {
+          flex-direction: column;
+        }
+      }
+      @media (max-width: 767.98px) {
+        .page-shell {
+          padding-inline: 12px;
+          padding-top: 16px;
+        }
+        .brand,
+        .toolbar,
+        .section-head {
+          flex-direction: column;
+        }
+        .action-stack {
+          grid-template-columns: 1fr;
+        }
+        .theme-switch,
+        .view-switch {
+          width: 100%;
+          justify-content: space-between;
+        }
+        .theme-switch .btn,
+        .view-switch .btn {
+          flex: 1 1 0;
+        }
+        #map {
+          height: 460px;
+        }
+      }
+      /* Compact state after search: keep the active filters visible without taking back vertical space. */
+      .filter-panel {
+        padding: 0.95rem;
+      }
+      .filter-groups {
+        gap: 0.75rem;
+      }
+      .filter-group {
+        padding: 0.85rem;
+        background: var(--surface);
+        box-shadow: none;
+      }
+      .group-title {
+        margin-bottom: 0.65rem;
+        font-size: 0.95rem;
+      }
+      .helper {
+        font-size: 0.8rem;
+      }
+      .filters-compact {
+        position: sticky;
+        top: 12px;
+        z-index: 6;
+        margin-bottom: 0.9rem;
+        padding: 0.9rem 1rem;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        background: color-mix(in srgb, var(--surface) 94%, transparent);
+        backdrop-filter: blur(12px);
+        box-shadow: var(--shadow-soft);
+      }
+      .filters-compact-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.9rem;
+        flex-wrap: wrap;
+      }
+      .filters-compact-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+      }
+      .filters-compact-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        flex-wrap: wrap;
+      }
+      .filters-panel-collapsed {
+        padding: 0.95rem;
+      }
+      .summary-panel {
+        margin-top: 0.85rem;
+        padding-top: 0.85rem;
+      }
+      .summary-header {
+        margin-bottom: 0.35rem;
+      }
+      .table-wrap {
+        max-height: 72vh;
+        min-height: 560px;
+      }
+      .summary-subtitle {
+        display: none;
+      }
+      .summary-title {
+        font-size: 0.78rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .summary-chip {
+        padding: 0.35rem 0.6rem;
+      }
+      .toolbar {
+        padding: 0.85rem 1rem;
+      }
+      .toolbar h2 {
+        font-size: 1rem;
+      }
+      #resultsMeta {
+        font-size: 0.92rem;
+      }
+      .state-box {
+        padding: 0.8rem 1rem;
+      }
+      .state-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+      }
+      .count-pill {
+        padding: 0.42rem 0.7rem;
+      }
+      .theme-switch,
+      .view-switch {
+        gap: 0.25rem;
+      }
+      .table thead th {
+        text-align: left;
+        vertical-align: middle;
+      }
+      .sort-trigger {
+        justify-content: flex-start;
+        gap: 0.5rem;
+        text-align: left;
+      }
+      .info-trigger {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1rem;
+        height: 1rem;
+        margin-left: 0.3rem;
+        border: none;
+        background: none;
+        color: var(--muted);
+        padding: 0;
+        vertical-align: middle;
+      }
+      .info-trigger:hover,
+      .info-trigger:focus {
+        color: var(--primary);
+      }
+      .th-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.2rem;
+        white-space: nowrap;
+      }
+      .share-card {
+        margin-top: 0.85rem;
+        padding: 0.95rem 1rem;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: var(--surface-2);
+      }
+      .share-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+      .share-head h3 {
+        margin: 0;
+        font-size: 0.96rem;
+      }
+      .share-actions {
+        display: flex;
+        gap: 0.55rem;
+        flex-wrap: wrap;
+        margin-top: 0.85rem;
+      }
+      .helper.is-error {
+        color: var(--danger);
+      }
+      .site-footer {
+        margin-top: 1.25rem;
+        padding: 1.1rem 1.2rem;
+      }
+      .site-footer p {
+        margin: 0;
+      }
+      .footer-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+      }
+      .footer-title {
+        font-size: 1rem;
+        font-weight: 700;
+      }
+      .footer-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.85rem 1.25rem;
+        font-size: 0.92rem;
+      }
+      .footer-links a {
+        font-weight: 600;
+        text-decoration: none;
+      }
+      .footer-links a:hover {
+        text-decoration: underline;
+      }
+      .grade-badge {
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        border-radius: 50%;
+        font-weight: 500;
+        border: none;
+        box-shadow: none;
+      }
+      .grade-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        padding: 0;
+        border-radius: 50%;
+        border: none;
+        background: color-mix(in srgb, var(--grade-color) 18%, transparent);
+        color: var(--grade-color) !important;
+        opacity: 1;
+        line-height: 1;
+        transition:
+          background-color 0.15s ease,
+          color 0.15s ease,
+          transform 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+      .btn-check:checked + .grade-pill {
+        background: var(--grade-color);
+        color: var(--grade-text) !important;
+        transform: translateY(-1px);
+        box-shadow: none;
+      }
+      .btn-check:focus + .grade-pill {
+        box-shadow: var(--focus);
+      }
+      .btn-check:not(:checked) + .grade-pill {
+        box-shadow: none;
+      }
+      @media (max-width: 991.98px) {
+        .table-wrap {
+          max-height: 68vh;
+          min-height: 480px;
+        }
+      }
+      @media (max-width: 767.98px) {
+        .header-actions,
+        .toolbar-actions {
+          width: 100%;
+        }
+        .theme-switch,
+        .view-switch {
+          width: 100%;
+          justify-content: space-between;
+        }
+        .table-wrap {
+          max-height: 62vh;
+          min-height: 420px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="panel app-header">
+        <div class="brand">
+          <div class="brand-icon" aria-hidden="true">
+            <i class="bi bi-building-check fs-3"></i>
+          </div>
+          <div>
+            <p class="eyebrow">Donn&eacute;es ADEME</p>
+            <h1>Observatoire DPE</h1>
+            <p class="lede">
+              Rep&eacute;rez les biens ayant r&eacute;cemment &eacute;tabli un
+              DPE pour identifier plus t&ocirc;t des opportunit&eacute;s
+              potentielles de mise en vente.
+            </p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <div class="theme-switch" role="group" aria-label="Choix du theme">
+            <button type="button" class="btn btn-sm" data-theme-mode="light">
+              Clair
+            </button>
+            <button type="button" class="btn btn-sm" data-theme-mode="dark">
+              Sombre
+            </button>
+            <button type="button" class="btn btn-sm" data-theme-mode="auto">
+              Auto
+            </button>
+          </div>
+        </div>
+      </header>
 
-  <section class="panel filter-panel">
-    <form id="filters">
-      <div class="filter-groups">
-        <section class="filter-group">
-          <h2 class="group-title"><i class="bi bi-geo-alt"></i>Localisation</h2>
-          <div class="stack-sm">
-            <div>
-              <label for="postal" class="form-label">Code postal</label>
-              <input id="postal" class="form-control" value="44600" placeholder="Ex.: 44000 ou 44000,44100" autocomplete="postal-code">
-              <p class="helper mt-2 mb-0">Un ou plusieurs codes postaux, separes par une virgule ou un espace.</p>
+      <section class="panel filter-panel" id="filtersPanel">
+        <div class="filters-compact d-none" id="filtersCompact">
+          <div class="filters-compact-head">
+            <div class="filters-compact-copy">
+              <p class="summary-title">Filtres actifs</p>
+              <div class="summary-chips" id="compactFilterChips"></div>
             </div>
-          </div>
-        </section>
-        <section class="filter-group">
-          <h2 class="group-title"><i class="bi bi-sliders"></i>Crit&egrave;res</h2>
-          <div class="stack-sm">
-            <div>
-              <label class="form-label">Type de b&acirc;timent</label>
-              <div class="toggle-row" id="typeContainer" aria-label="Types de b&acirc;timent"></div>
-            </div>
-            <div>
-              <label class="form-label">Classe DPE</label>
-              <div class="toggle-row" id="grades" aria-label="Classes DPE"></div>
-            </div>
-            <div class="row g-2">
-              <div class="col-12 col-sm-6"><label for="dStart" class="form-label">Date de d&eacute;but</label><input id="dStart" type="date" class="form-control"></div>
-              <div class="col-12 col-sm-6"><label for="dEnd" class="form-label">Date de fin</label><input id="dEnd" type="date" class="form-control"></div>
-              <div class="col-12 col-sm-6"><label for="sMin" class="form-label">Surface min (m&sup2;)</label><input id="sMin" type="number" class="form-control" min="0" placeholder="Ex.: 30"></div>
-              <div class="col-12 col-sm-6"><label for="sMax" class="form-label">Surface max (m&sup2;)</label><input id="sMax" type="number" class="form-control" min="0" placeholder="Ex.: 120"></div>
-            </div>
-          </div>
-        </section>
-        <section class="filter-group">
-          <h2 class="group-title"><i class="bi bi-layout-text-window-reverse"></i>Affichage</h2>
-          <div class="stack-sm">
-            <div>
-              <label for="limit" class="form-label">Nombre max de r&eacute;sultats</label>
-              <input id="limit" type="number" class="form-control" value="100" min="1" max="1000" step="1" inputmode="numeric">
-              <p class="helper mt-2 mb-0">Limite le volume charg&eacute; depuis l'API ADEME pour garder une interface rapide.</p>
-            </div>
-            <div class="dropdown">
-              <button class="btn btn-soft w-100 text-start d-flex align-items-center justify-content-between" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Personnaliser les colonnes du tableau">
-                <span><i class="bi bi-layout-three-columns me-2"></i>Personnaliser les colonnes</span>
-                <i class="bi bi-chevron-down"></i>
+            <div class="filters-compact-actions">
+              <button id="editFiltersBtn" type="button" class="btn btn-soft">
+                <i class="bi bi-sliders me-2"></i>Modifier les filtres
               </button>
-              <ul class="dropdown-menu dropdown-menu-end" id="colToggles"></ul>
-            </div>
-            <div class="action-stack">
-              <button id="searchBtn" type="submit" class="btn btn-primary"><i class="bi bi-search me-2"></i>Lancer la recherche</button>
-              <button id="resetBtn" type="button" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise me-2"></i>R&eacute;initialiser</button>
-              <button id="exampleBtn" type="button" class="btn btn-outline-secondary"><i class="bi bi-stars me-2"></i>Charger exemples</button>
+              <button
+                id="compactResetBtn"
+                type="button"
+                class="btn btn-outline-secondary"
+              >
+                <i class="bi bi-arrow-counterclockwise me-2"></i>Réinitialiser
+              </button>
             </div>
           </div>
-        </section>
-      </div>
-    </form>
-  </section>
-
-  <section class="panel toolbar d-none" id="resultsBar">
-    <div class="toolbar-actions">
-      <span class="count-pill" id="countPill"><i class="bi bi-list-ul"></i>0 r&eacute;sultat</span>
-      <p id="resultsMeta" class="mb-0 muted"></p>
-      <div class="view-switch" role="tablist" aria-label="Choix de la vue">
-        <button class="btn active" type="button" data-bs-toggle="tab" data-bs-target="#listView" aria-controls="listView" aria-selected="true">Liste</button>
-        <button class="btn" type="button" data-bs-toggle="tab" data-bs-target="#mapView" aria-controls="mapView" aria-selected="false">Carte</button>
-      </div>
-    </div>
-  </section>
-
-  <section class="panel state-box d-none" id="stateBox" data-kind="info" aria-live="polite">
-    <div class="state-icon" id="stateIcon"><i class="bi bi-search"></i></div>
-    <div>
-      <h2 class="state-title" id="stateTitle">Aucune recherche lanc&eacute;e</h2>
-      <p class="state-copy" id="stateCopy">Le tableau, la carte et la synth&egrave;se se mettront &agrave; jour apr&egrave;s votre premi&egrave;re recherche.</p>
-    </div>
-  </section>
-
-  <div class="tab-content">
-    <div class="tab-pane fade show active" id="listView" role="tabpanel">
-      <section class="panel content-panel">
-        <div class="section-head"><div><h3>Liste des DPE</h3><p id="tableMeta">Le tri, les colonnes visibles et la s&eacute;lection active seront disponibles apr&egrave;s la premi&egrave;re recherche.</p></div></div>
-        <div id="emptyList" class="empty-panel"><div><i class="bi bi-search"></i><p class="mt-3 mb-1 fw-semibold">Lancez une recherche pour afficher les DPE.</p><p class="mb-0">Les r&eacute;sultats seront affich&eacute;s ici avec tri, liens ADEME et acc&egrave;s direct &agrave; la carte.</p></div></div>
-        <div id="resBox" class="d-none"><div class="table-wrap"><table class="table table-hover table-sm align-middle" id="table"><thead></thead><tbody></tbody></table></div></div>
+        </div>
+        <form id="filters">
+          <div id="filtersFormBody">
+            <div class="filter-groups">
+              <section class="filter-group">
+                <h2 class="group-title">
+                  <i class="bi bi-geo-alt"></i>Localisation
+                </h2>
+                <div class="stack-sm">
+                  <div>
+                    <label for="postal" class="form-label">Code postal</label>
+                    <input
+                      id="postal"
+                      class="form-control"
+                      placeholder="Ex.: 44000 ou 44000,44100"
+                      autocomplete="postal-code"
+                    />
+                    <p class="helper mt-2 mb-0" id="postalHelp">
+                      Un ou plusieurs codes postaux, s&eacute;par&eacute;s par
+                      une virgule ou un espace.
+                    </p>
+                  </div>
+                </div>
+              </section>
+              <section class="filter-group">
+                <h2 class="group-title">
+                  <i class="bi bi-sliders"></i>Crit&egrave;res
+                </h2>
+                <div class="stack-sm">
+                  <div>
+                    <label class="form-label">Type de b&acirc;timent</label>
+                    <div
+                      class="toggle-row"
+                      id="typeContainer"
+                      aria-label="Types de b&acirc;timent"
+                    ></div>
+                  </div>
+                  <div>
+                    <label class="form-label">Classe DPE</label>
+                    <div
+                      class="toggle-row"
+                      id="grades"
+                      aria-label="Classes DPE"
+                    ></div>
+                  </div>
+                  <div class="row g-2">
+                    <div class="col-12 col-sm-6">
+                      <label for="dStart" class="form-label"
+                        >DPE &eacute;tabli &agrave; partir du</label
+                      ><input
+                        id="dStart"
+                        type="date"
+                        class="form-control"
+                        aria-describedby="dateHelp"
+                      />
+                    </div>
+                    <div class="col-12 col-sm-6">
+                      <label for="dEnd" class="form-label"
+                        >DPE &eacute;tabli jusqu&apos;au</label
+                      ><input
+                        id="dEnd"
+                        type="date"
+                        class="form-control"
+                        aria-describedby="dateHelp"
+                      />
+                    </div>
+                    <div class="col-12">
+                      <p id="dateHelp" class="helper mb-0">
+                        Ces dates filtrent la date d&apos;&eacute;tablissement
+                        du DPE, c&apos;est-&agrave;-dire la date &agrave;
+                        laquelle le diagnostic a &eacute;t&eacute;
+                        r&eacute;alis&eacute;.
+                      </p>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                      <label for="sMin" id="surfaceMinLabel" class="form-label"
+                        >Surface habitable min (m&sup2;)</label
+                      ><input
+                        id="sMin"
+                        type="number"
+                        class="form-control"
+                        min="0"
+                        placeholder="Ex.: 30"
+                        aria-describedby="surfaceHelp"
+                      />
+                    </div>
+                    <div class="col-12 col-sm-6">
+                      <label for="sMax" id="surfaceMaxLabel" class="form-label"
+                        >Surface habitable max (m&sup2;)</label
+                      ><input
+                        id="sMax"
+                        type="number"
+                        class="form-control"
+                        min="0"
+                        placeholder="Ex.: 120"
+                        aria-describedby="surfaceHelp"
+                      />
+                    </div>
+                    <div class="col-12">
+                      <p id="surfaceHelp" class="helper mb-0">
+                        Pour un appartement ou une maison, la surface correspond
+                        &agrave; la surface habitable du logement, hors jardin,
+                        terrain, cave et garage.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+              <section class="filter-group">
+                <h2 class="group-title">
+                  <i class="bi bi-layout-text-window-reverse"></i>Affichage
+                </h2>
+                <div class="stack-sm">
+                  <div>
+                    <label for="limit" class="form-label"
+                      >Nombre max de r&eacute;sultats</label
+                    >
+                    <input
+                      id="limit"
+                      type="number"
+                      class="form-control"
+                      value="100"
+                      min="1"
+                      max="1000"
+                      step="1"
+                      inputmode="numeric"
+                    />
+                    <p class="helper mt-2 mb-0">
+                      Limite le volume charg&eacute; depuis l'API ADEME pour
+                      garder une interface rapide.
+                    </p>
+                  </div>
+                  <div class="dropdown">
+                    <button
+                      class="btn btn-soft w-100 text-start d-flex align-items-center justify-content-between"
+                      type="button"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                      aria-label="Personnaliser les colonnes du tableau"
+                    >
+                      <span
+                        ><i class="bi bi-layout-three-columns me-2"></i
+                        >Personnaliser les colonnes</span
+                      >
+                      <i class="bi bi-chevron-down"></i>
+                    </button>
+                    <ul
+                      class="dropdown-menu dropdown-menu-end"
+                      id="colToggles"
+                    ></ul>
+                  </div>
+                  <div class="action-stack">
+                    <button
+                      id="searchBtn"
+                      type="submit"
+                      class="btn btn-primary"
+                    >
+                      <i class="bi bi-search me-2"></i>Lancer la recherche
+                    </button>
+                    <button
+                      id="resetBtn"
+                      type="button"
+                      class="btn btn-outline-secondary"
+                    >
+                      <i class="bi bi-arrow-counterclockwise me-2"></i
+                      >R&eacute;initialiser
+                    </button>
+                  </div>
+                  <p id="searchRequirements" class="helper mb-0">
+                    Renseignez au moins un code postal, un type de
+                    b&acirc;timent, une classe DPE et une date pour lancer la
+                    recherche.
+                  </p>
+                </div>
+              </section>
+            </div>
+          </div>
+        </form>
       </section>
-    </div>
-    <div class="tab-pane fade" id="mapView" role="tabpanel">
-      <section class="panel content-panel">
-        <div class="section-head"><div><h3>Carte des logements</h3><p id="mapMeta">Les marqueurs reprennent la classe DPE et s'ouvrent sur une fiche r&eacute;sum&eacute;e.</p></div></div>
-        <div class="map-wrap">
-          <div id="map" aria-label="Carte des r&eacute;sultats DPE"></div>
-          <aside class="map-legend" aria-label="L&eacute;gende DPE">
-            <p class="legend-title">L&eacute;gende DPE</p>
-            <div class="legend-row" id="legendGrades"></div>
-            <p class="legend-note mb-2">Chaque pastille affiche la lettre du DPE, pas seulement une couleur.</p>
-            <p class="map-note mb-0" id="mapInfo">La carte se remplira apr&egrave;s votre premi&egrave;re recherche.</p>
-          </aside>
+
+      <section class="panel toolbar d-none" id="resultsBar">
+        <div class="toolbar-actions">
+          <span class="count-pill" id="countPill"
+            ><i class="bi bi-list-ul"></i>0 r&eacute;sultat</span
+          >
+          <p id="resultsMeta" class="mb-0 muted"></p>
+          <div class="view-switch" role="tablist" aria-label="Choix de la vue">
+            <button
+              class="btn active"
+              type="button"
+              data-bs-toggle="tab"
+              data-bs-target="#listView"
+              aria-controls="listView"
+              aria-selected="true"
+            >
+              Liste
+            </button>
+            <button
+              class="btn"
+              type="button"
+              data-bs-toggle="tab"
+              data-bs-target="#mapView"
+              aria-controls="mapView"
+              aria-selected="false"
+            >
+              Carte
+            </button>
+          </div>
+          <button
+            class="btn btn-soft"
+            type="button"
+            id="openShareModal"
+            data-bs-toggle="modal"
+            data-bs-target="#shareModal"
+          >
+            <i class="bi bi-share me-2"></i>Partager
+          </button>
         </div>
       </section>
-    </div>
-  </div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.js"></script>
-<script>
-const API = 'https://data.ademe.fr/data-fair/api/v1/datasets/dpe03existant/lines';
-const STORAGE_KEY = 'dpe-explorer-theme-mode';
-const SYSTEM_THEME = window.matchMedia('(prefers-color-scheme: dark)');
-const TYPE_OPTIONS = ['Appartement', 'Maison', 'Immeuble'];
-const GRADE_OPTIONS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
-const COLORS = { A:'#319834', B:'#33cc31', C:'#cbfc34', D:'#fbfe06', E:'#fbcc04', F:'#f68e1e', G:'#ef1d26', Def:'#94a3b8' };
-const BADGE_TEXT = { A:'#ffffff', B:'#09280d', C:'#1f2937', D:'#1f2937', E:'#1f2937', F:'#111827', G:'#ffffff', Def:'#0f172a' };
-const FIELDS = [
-  { k:'adresse_ban', l:'Adresse', cellClass:'cell-address cell-primary text-break', style:'max-width:280px' },
-  { k:'type_batiment', l:'Type', cellClass:'cell-secondary', f:v => formatBuildingType(v) },
-  { k:'surface_habitable_logement', l:'Surface', cellClass:'text-end font-monospace', f:v => v ? Math.round(v) + ' m2' : '-' },
-  { k:'annee_construction', l:'Annee', cellClass:'text-center cell-secondary', f:(v, d) => v || d.periode_construction || '-' },
-  { k:'numero_dpe', l:'N° DPE', cellClass:'font-monospace small cell-secondary', toggle:'dpe-id', html:true, f:v => v ? `<a href="https://data.ademe.fr/datasets/dpe03existant/full?p=%2Fdata-fair%2Fembed%2Fdataset%2Fdpe03existant%2Ftable&q=${encodeURIComponent(v)}" target="_blank" rel="noreferrer noopener">${escapeHtml(v)}</a>` : '-' },
-  { k:'etiquette_dpe', l:'DPE', cellClass:'text-center cell-primary', html:true, f:v => renderBadge('badge', v) },
-  { k:'etiquette_ges', l:'GES', cellClass:'text-center cell-secondary', toggle:'ges', html:true, f:v => renderBadge('badge', v) },
-  { k:'conso_5_usages_par_m2_ep', l:'Conso', labelHtml:'<span class="th-label">Conso <button type="button" class="info-trigger" data-bs-toggle="tooltip" data-bs-placement="top" title="Consommation annuelle d energie primaire du logement, rapportee au m2, calculee sur 5 usages du DPE."><i class="bi bi-info-circle" aria-hidden="true"></i><span class="visually-hidden">Explication consommation energie</span></button></span>', cellClass:'text-end font-monospace cell-secondary', toggle:'conso', f:v => v ? Math.round(v) : '-' },
-  { k:'date_etablissement_dpe', l:'Date', cellClass:'text-center cell-secondary', toggle:'date', f:v => v ? formatDate(v) : '-' }
-];
-const SORT_ICON = { neutral:'arrow-down-up', asc:'sort-up', desc:'sort-down' };
-let appData = [];
-let sortState = { k:'date_etablissement_dpe', o:-1 };
-let map;
-let markers;
-let markerIndex = new Map();
-let selectedRowId = null;
-let themeMode = loadThemeMode();
-let activeTileLayer = null;
-let lightTileLayer = null;
-let darkTileLayer = null;
-let lastStats = { total:0, geocoded:0, ungeocoded:0 };
-let hasSearched = false;
-let lastError = null;
-const visibleToggles = new Set(FIELDS.filter(field => field.toggle).map(field => field.toggle));
 
-function $(id){return document.getElementById(id);}
-function escapeHtml(value){return String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
-function formatDate(value){return new Date(value).toLocaleDateString('fr-FR');}
-function formatBuildingType(value){const text = String(value || '');return text ? text.charAt(0).toUpperCase() + text.slice(1).toLowerCase() : '-';}
-function fieldLabel(field){return field.k === 'numero_dpe' ? 'N&deg; DPE' : escapeHtml(field.l);}
-function pluralize(count, singular, plural){return count > 1 ? plural : singular;}
-function summarizeSelection(values, allValues, allLabel){if(!values.length){return 'aucun';}return values.length === allValues.length ? allLabel : values.join(', ');}
-function renderBadge(type, value, size = 30, iconName = 'building'){const grade = value || '-';const color = COLORS[grade] || COLORS.Def;const textColor = BADGE_TEXT[grade] || BADGE_TEXT.Def;if(type === 'badge'){return `<span class="grade-badge" aria-label="Classe ${escapeHtml(grade)}" style="background:${color};color:${textColor};min-width:${size}px;min-height:${size}px"><span class="visually-hidden">Classe </span>${escapeHtml(grade)}</span>`;}if(type === 'pin'){return `<div class="custom-pin" aria-hidden="true" style="background:${color};color:${textColor};width:${size}px;height:${size}px"><i class="bi bi-${iconName}"></i></div>`;}return '-';}
-function loadThemeMode(){try{return localStorage.getItem(STORAGE_KEY) || 'auto';}catch(error){return 'auto';}}
-function resolvedTheme(mode = themeMode){return mode === 'auto' ? (SYSTEM_THEME.matches ? 'dark' : 'light') : mode;}
-function persistTheme(mode){try{localStorage.setItem(STORAGE_KEY, mode);}catch(error){console.warn('Impossible de sauvegarder le theme.', error);}}
-function applyTheme(mode, persist = true){themeMode = mode;document.documentElement.dataset.themeMode = mode;document.documentElement.dataset.theme = resolvedTheme(mode);if(persist){persistTheme(mode);}document.querySelectorAll('[data-theme-mode]').forEach(button => {const active = button.dataset.themeMode === mode;button.classList.toggle('active', active);button.setAttribute('aria-pressed', String(active));});syncMapTiles();}
-function syncMapTiles(){if(!map || !lightTileLayer || !darkTileLayer){return;}const wantedLayer = resolvedTheme() === 'dark' ? darkTileLayer : lightTileLayer;if(activeTileLayer === wantedLayer){return;}if(activeTileLayer){map.removeLayer(activeTileLayer);}wantedLayer.addTo(map);activeTileLayer = wantedLayer;}
-function setDefaultDates(days = 30){const end = new Date();const start = new Date();start.setDate(start.getDate() - days);$('dEnd').valueAsDate = end;$('dStart').valueAsDate = start;}
-function setAllCheckboxes(selector, checked){document.querySelectorAll(selector).forEach(input => {input.checked = checked;});}
-function initTheme(){document.querySelectorAll('[data-theme-mode]').forEach(button => {button.addEventListener('click', () => applyTheme(button.dataset.themeMode));});const onSystemThemeChange = () => {if(themeMode === 'auto'){applyTheme('auto', false);}};if(SYSTEM_THEME.addEventListener){SYSTEM_THEME.addEventListener('change', onSystemThemeChange);}else if(SYSTEM_THEME.addListener){SYSTEM_THEME.addListener(onSystemThemeChange);}applyTheme(themeMode, false);}
-function buildOptionToggle(containerId, values, prefix, className, theme){const container = $(containerId);container.innerHTML = '';values.forEach(value => {const input = document.createElement('input');input.type = 'checkbox';input.className = `btn-check ${className}`;input.id = `${prefix}${value}`;input.value = value;input.checked = true;const appearance = theme(value);const label = document.createElement('label');label.className = `btn btn-sm ${typeof appearance === 'string' ? appearance : appearance.className || ''}`;label.htmlFor = input.id;label.textContent = value;if(typeof appearance === 'object' && appearance.style){label.style.cssText = appearance.style;}input.addEventListener('change', updateFilterSummary);container.append(input, label);});}
-function renderLegend(){$('legendGrades').innerHTML = GRADE_OPTIONS.map(grade => renderBadge('badge', grade, 28)).join('');}
-function initMap(){map = L.map('map',{fullscreenControl:true,zoomControl:true}).setView([46.6,1.9],6);lightTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors'});darkTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap contributors &copy; CARTO'});markers = L.layerGroup().addTo(map);syncMapTiles();}
-function initColumnToggles(){const menu = $('colToggles');menu.innerHTML = '';FIELDS.filter(field => field.toggle).forEach(field => {const li = document.createElement('li');const label = document.createElement('label');label.className = 'dropdown-item d-flex align-items-center gap-2';label.innerHTML = `<input type="checkbox" class="form-check-input m-0" ${visibleToggles.has(field.toggle) ? 'checked' : ''}> ${fieldLabel(field)}`;label.querySelector('input').addEventListener('change', event => {if(event.target.checked){visibleToggles.add(field.toggle);}else{visibleToggles.delete(field.toggle);}renderTableHead();renderData();});li.appendChild(label);menu.appendChild(li);});}
-function sortIcon(fieldKey){if(sortState.k !== fieldKey){return SORT_ICON.neutral;}return sortState.o === 1 ? SORT_ICON.asc : SORT_ICON.desc;}
-function renderTableHead(){const thead = $('table').querySelector('thead');const headerCells = FIELDS.map(field => {const hiddenClass = field.toggle && !visibleToggles.has(field.toggle) ? 'd-none' : '';const label = field.labelHtml || fieldLabel(field);return `<th scope="col" class="${hiddenClass}"><button type="button" class="sort-trigger" data-sort="${field.k}" aria-label="Trier par ${escapeHtml(field.k === 'numero_dpe' ? 'N° DPE' : field.l)}"><span>${label}</span><i class="bi bi-${sortIcon(field.k)} sort-icon" aria-hidden="true"></i></button></th>`;}).join('');thead.innerHTML = `<tr>${headerCells}<th scope="col" class="text-center">Localisation carte</th></tr>`;thead.querySelectorAll('[data-sort]').forEach(button => {button.addEventListener('click', () => App.sort(button.dataset.sort));});thead.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(node => bootstrap.Tooltip.getOrCreateInstance(node));}
-function getFilterState(){return {postalCodes:$('postal').value.split(/[\s,]+/).filter(Boolean),types:[...document.querySelectorAll('.type-filter:checked')].map(input => input.value),grades:[...document.querySelectorAll('.grade-filter:checked')].map(input => input.value),dateStart:$('dStart').value,dateEnd:$('dEnd').value,surfaceMin:$('sMin').value,surfaceMax:$('sMax').value,limit:$('limit').value || '100'};}
-function buildFilterChips(filters){return [{icon:'geo-alt',text:filters.postalCodes.length ? `Zone: ${filters.postalCodes.join(', ')}` : 'Zone: toutes'},{icon:'house',text:`Types: ${summarizeSelection(filters.types, TYPE_OPTIONS, 'tous')}`},{icon:'speedometer2',text:`DPE: ${summarizeSelection(filters.grades, GRADE_OPTIONS, 'toutes')}`},{icon:'calendar3',text:filters.dateStart || filters.dateEnd ? `Dates: ${filters.dateStart ? formatDate(filters.dateStart) : '?'} -> ${filters.dateEnd ? formatDate(filters.dateEnd) : '?'}` : 'Dates: non filtrees'},{icon:'aspect-ratio',text:filters.surfaceMin || filters.surfaceMax ? `Surface: ${filters.surfaceMin || '0'} - ${filters.surfaceMax || 'inf'} m2` : 'Surface: toutes'},{icon:'list-ol',text:`Limite API: ${filters.limit}`}];}
-function updateFilterSummary(){updateResultsToolbar();}
-function buildParams(){const filters = getFilterState();const params = {size:filters.limit,select:FIELDS.map(field => field.k).join(',') + ',code_postal_ban,_geopoint,periode_construction'};const queryParts = [filters.postalCodes.length ? `(${filters.postalCodes.map(code => `code_postal_brut:${code}`).join(' OR ')})` : null,filters.types.length ? `(${filters.types.map(type => `type_batiment:${type.toLowerCase()}`).join(' OR ')})` : null,filters.grades.length ? `(${filters.grades.map(grade => `etiquette_dpe:${grade}`).join(' OR ')})` : null].filter(Boolean);if(queryParts.length){params.qs = queryParts.join(' AND ');}[['date_etablissement_dpe_gte','dateStart'],['date_etablissement_dpe_lte','dateEnd'],['surface_habitable_logement_gte','surfaceMin'],['surface_habitable_logement_lte','surfaceMax']].forEach(([paramName,key]) => {if(filters[key]){params[paramName] = filters[key];}});return new URLSearchParams(params).toString();}
-function buildResultsSummary(filters){const parts = [];if(filters.postalCodes.length){parts.push(`zone ${filters.postalCodes.join(', ')}`);}parts.push(`types ${summarizeSelection(filters.types, TYPE_OPTIONS, 'tous')}`);parts.push(`DPE ${summarizeSelection(filters.grades, GRADE_OPTIONS, 'toutes')}`);if(filters.dateStart || filters.dateEnd){parts.push(`periode ${filters.dateStart ? formatDate(filters.dateStart) : '?'} -> ${filters.dateEnd ? formatDate(filters.dateEnd) : '?'}`);}if(filters.surfaceMin || filters.surfaceMax){parts.push(`surface ${filters.surfaceMin || '0'} - ${filters.surfaceMax || 'inf'} m2`);}parts.push(`limite ${filters.limit}`);return parts.join(' - ');}
-function updateResultsToolbar(){const filters = getFilterState();const summary = buildResultsSummary(filters);const resultsBar = $('resultsBar');$('countPill').innerHTML = `<i class="bi bi-list-ul"></i>${lastStats.total} ${pluralize(lastStats.total,'resultat','resultats')}`;if(!hasSearched){resultsBar.classList.add('d-none');$('resultsMeta').textContent = '';$('tableMeta').textContent = 'Le tri, les colonnes visibles et la selection active seront disponibles apres la premiere recherche.';$('mapMeta').textContent = 'La carte affichera ensuite les logements geolocalises correspondant a vos filtres.';return;}resultsBar.classList.remove('d-none');if(lastError){$('resultsMeta').textContent = 'Recherche en erreur';$('tableMeta').textContent = 'Aucun resultat fiable a afficher tant que la requete n a pas abouti.';$('mapMeta').textContent = 'La carte attend une reponse valide de l API avant d afficher des marqueurs.';return;}if(!lastStats.total){$('resultsMeta').textContent = 'Aucun resultat pour ces criteres';$('tableMeta').textContent = 'Le tableau reste vide car aucun DPE ne correspond a cette combinaison de filtres.';$('mapMeta').textContent = 'La carte n a aucun logement a afficher pour cette recherche.';return;}$('resultsMeta').textContent = `${lastStats.geocoded} geolocalises, ${lastStats.ungeocoded} sans geopoint`;$('tableMeta').textContent = 'Cliquez sur un en-tete pour trier, puis utilisez l icone de localisation pour centrer un logement sur la carte.';$('mapMeta').textContent = 'Les marqueurs sont colores selon la classe DPE. Les logements sans geopoint restent consultables dans la liste.';}
-function setState(kind, title, copy, icon){const stateBox = $('stateBox');stateBox.dataset.kind = kind;$('stateIcon').innerHTML = `<i class="bi bi-${icon}" aria-hidden="true"></i>`;$('stateTitle').textContent = title;$('stateCopy').textContent = copy;stateBox.classList.toggle('d-none', kind === 'success');}
-function resetResults(keepSearchState = false){appData = [];selectedRowId = null;markerIndex = new Map();lastStats = { total:0, geocoded:0, ungeocoded:0 };lastError = null;if(!keepSearchState){hasSearched = false;}renderData();updateResultsToolbar();}
-function setDefaultFilters(){$('postal').value = '44600';$('sMin').value = '';$('sMax').value = '';$('limit').value = '100';setDefaultDates(30);setAllCheckboxes('.type-filter', true);setAllCheckboxes('.grade-filter', true);}
-function loadExampleFilters(){$('postal').value = '44100';$('sMin').value = '30';$('sMax').value = '140';$('limit').value = '100';setDefaultDates(180);setAllCheckboxes('.type-filter', true);setAllCheckboxes('.grade-filter', true);updateFilterSummary();setState('info','Exemple charge','Les filtres ont ete remplis avec une requete representative. Vous pouvez lancer la recherche telle quelle ou l ajuster.','stars');}
-function applySort(){if(!sortState.k){return;}appData.sort((left, right) => {const valueA = left[sortState.k];const valueB = right[sortState.k];if(valueA == null || valueA === ''){return 1 * sortState.o;}if(valueB == null || valueB === ''){return -1 * sortState.o;}if(typeof valueA === 'number' && typeof valueB === 'number'){return (valueA - valueB) * sortState.o;}return String(valueA).localeCompare(String(valueB), undefined, { numeric:true, sensitivity:'base' }) * sortState.o;});}
-function getFieldValue(field, item){const value = item[field.k];if(value == null || value === ''){return '-';}if(field.f){return field.f(value, item);}return String(value);}
-function popupContent(item){const rows = FIELDS.map(field => {const value = getFieldValue(field, item);return `<dt>${fieldLabel(field)}</dt><dd>${field.html ? value : escapeHtml(value)}</dd>`;}).join('');return `<div class="fw-bold border-bottom pb-2 mb-2">${escapeHtml(item.adresse_ban || 'Adresse inconnue')}</div><dl class="popup-grid">${rows}</dl>`;}
-function markerIconName(type){const normalized = String(type || '').toLowerCase();if(normalized.includes('maison')){return 'house-door-fill';}if(normalized.includes('immeuble')){return 'buildings-fill';}return 'building';}
-function renderRows(){const tbody = $('table').querySelector('tbody');tbody.innerHTML = '';appData.forEach(item => {const row = document.createElement('tr');row.dataset.rowId = item.numero_dpe || '';row.className = item.numero_dpe && item.numero_dpe === selectedRowId ? 'selected-row' : '';const cells = FIELDS.map(field => {const hiddenClass = field.toggle && !visibleToggles.has(field.toggle) ? 'd-none' : '';const value = getFieldValue(field, item);return `<td class="${[field.cellClass || '', hiddenClass].join(' ').trim()}" style="${field.style || ''}">${field.html ? value : escapeHtml(value)}</td>`;}).join('');row.innerHTML = `${cells}<td class="text-center"><button type="button" class="btn btn-sm btn-soft" data-zoom="${item.numero_dpe || ''}" aria-label="Voir la localisation sur la carte"><i class="bi bi-geo-alt" aria-hidden="true"></i></button></td>`;tbody.appendChild(row);});tbody.querySelectorAll('[data-zoom]').forEach(button => {button.addEventListener('click', () => App.zoom(button.dataset.zoom));});}
-function renderMarkers(){markers.clearLayers();markerIndex = new Map();const bounds = [];let geocoded = 0;appData.forEach(item => {if(!item._geopoint){return;}const parts = String(item._geopoint).split(',').map(Number);const lat = parts[0];const lng = parts[1];if(Number.isNaN(lat) || Number.isNaN(lng)){return;}const marker = L.marker([lat, lng], {icon:L.divIcon({html:renderBadge('pin', item.etiquette_dpe, 34, markerIconName(item.type_batiment)),className:'',iconSize:[34,34]})}).bindPopup(popupContent(item));marker.did = item.numero_dpe || '';marker.on('click', () => App.selectRow(marker.did, false));marker.addTo(markers);markerIndex.set(marker.did, marker);bounds.push([lat, lng]);geocoded += 1;});if(bounds.length){map.fitBounds(bounds,{padding:[24,24]});}else{map.setView([46.6,1.9],6);}return geocoded;}
-function renderData(){if(!appData.length){$('resBox').classList.add('d-none');$('emptyList').classList.remove('d-none');$('mapInfo').textContent = hasSearched ? 'Aucun logement geolocalise a afficher pour cette recherche.' : 'La carte se remplira apres votre premiere recherche.';markers.clearLayers();return;}$('emptyList').classList.add('d-none');$('resBox').classList.remove('d-none');renderTableHead();renderRows();const geocoded = renderMarkers();const ungeocoded = Math.max(appData.length - geocoded, 0);lastStats = { total:appData.length, geocoded, ungeocoded };$('mapInfo').textContent = ungeocoded ? `${geocoded} resultats sont localises sur la carte. ${ungeocoded} restent disponibles uniquement dans la liste faute de geopoint.` : `${geocoded} resultats sont geolocalises et visibles sur la carte.`;}
-const App = {async search(){const searchButton = $('searchBtn');hasSearched = true;lastError = null;selectedRowId = null;lastStats = { total:0, geocoded:0, ungeocoded:0 };updateResultsToolbar();setState('info','Recherche en cours','L application interroge les donnees ADEME avec vos filtres actuels.','hourglass-split');searchButton.disabled = true;searchButton.innerHTML = '<span class="spinner-wrap"><span class="spinner-border spinner-border-sm" aria-hidden="true"></span>Recherche...</span>';try{const response = await fetch(`${API}?${buildParams()}`);if(!response.ok){throw new Error(response.statusText || 'API error');}const payload = await response.json();appData = payload.results || [];applySort();renderData();if(!appData.length){setState('warning','Aucun DPE trouve','Aucun logement ne correspond a cette combinaison de filtres. Essayez une zone plus large ou une periode plus longue.','inbox');}else{setState('success','Resultats charges',`${appData.length} ${pluralize(appData.length,'DPE a ete charge','DPE ont ete charges')} avec ${lastStats.geocoded} geopoints exploitables sur la carte.`,'check-circle');}}catch(error){console.error(error);lastError = error;resetResults(true);setState('error','Erreur API','La requete n a pas abouti. Verifiez votre connexion ou ressayez avec une recherche plus simple.','exclamation-triangle');}finally{updateResultsToolbar();searchButton.disabled = false;searchButton.innerHTML = '<i class="bi bi-search me-2"></i>Lancer la recherche';}},sort(fieldKey){sortState = {k:fieldKey,o:sortState.k === fieldKey && sortState.o === 1 ? -1 : 1};applySort();renderData();updateResultsToolbar();},selectRow(id, scrollIntoView = true){selectedRowId = id || null;document.querySelectorAll('tbody tr').forEach(row => {row.classList.toggle('selected-row', row.dataset.rowId === selectedRowId);if(scrollIntoView && row.dataset.rowId === selectedRowId){row.scrollIntoView({block:'nearest',behavior:'smooth'});}});},zoom(id){if(!id){return;}App.selectRow(id);const mapTrigger = document.querySelector('[data-bs-target="#mapView"]');bootstrap.Tab.getOrCreateInstance(mapTrigger).show();const marker = markerIndex.get(id);if(marker){map.setView(marker.getLatLng(),16);marker.openPopup();}}};
-function bindEvents(){$('filters').addEventListener('submit', event => {event.preventDefault();App.search();});['postal','dStart','dEnd','sMin','sMax','limit'].forEach(id => {$(id).addEventListener('input', updateFilterSummary);$(id).addEventListener('change', updateFilterSummary);});$('resetBtn').addEventListener('click', () => {setDefaultFilters();resetResults();updateFilterSummary();setState('info','Filtres reinitialises','Les filtres ont retrouve leurs valeurs par defaut. Vous pouvez lancer une nouvelle recherche.','arrow-counterclockwise');});$('exampleBtn').addEventListener('click', loadExampleFilters);document.querySelectorAll('[data-bs-target="#mapView"], [data-bs-target="#listView"]').forEach(button => {button.addEventListener('shown.bs.tab', event => {document.querySelectorAll('.view-switch .btn').forEach(tabButton => {tabButton.classList.toggle('active', tabButton === event.target);});if(event.target.dataset.bsTarget === '#mapView'){setTimeout(() => map.invalidateSize(), 120);}});});}
-function init(){buildOptionToggle('typeContainer', TYPE_OPTIONS, 'type-', 'type-filter', () => 'btn-outline-primary');buildOptionToggle('grades', GRADE_OPTIONS, 'grade-', 'grade-filter', grade => ({className:'grade-pill',style:`--grade-color:${COLORS[grade] || COLORS.Def};--grade-text:${BADGE_TEXT[grade] || BADGE_TEXT.Def};`}));setDefaultFilters();initTheme();renderLegend();initMap();initColumnToggles();renderTableHead();bindEvents();updateFilterSummary();}
-document.addEventListener('DOMContentLoaded', init);
-</script>
-</body>
+      <div
+        class="modal fade"
+        id="shareModal"
+        tabindex="-1"
+        aria-labelledby="shareModalTitle"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div
+            class="modal-content"
+            style="
+              background: var(--surface);
+              color: var(--text);
+              border-color: var(--border);
+            "
+          >
+            <div
+              class="modal-header"
+              style="border-bottom-color: var(--border)"
+            >
+              <div>
+                <h2 class="modal-title fs-5" id="shareModalTitle">
+                  Partager les r&eacute;sultats
+                </h2>
+                <p class="helper mb-0">
+                  Un r&eacute;sum&eacute; propre des filtres et des principaux
+                  DPE sera utilis&eacute;.
+                </p>
+              </div>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Fermer"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <section class="share-card">
+                <div class="share-head">
+                  <h3>Partager les r&eacute;sultats</h3>
+                  <span class="helper" id="shareMeta"
+                    >Aucun r&eacute;sultat &agrave; partager</span
+                  >
+                </div>
+                <p class="helper mb-0">
+                  Choisissez un canal pour partager automatiquement un
+                  r&eacute;sum&eacute; propre de la recherche et des principaux
+                  biens rep&eacute;r&eacute;s.
+                </p>
+                <div class="share-actions">
+                  <button type="button" class="btn btn-primary" id="shareEmail">
+                    <i class="bi bi-envelope me-2"></i>Email
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    id="shareX"
+                  >
+                    <i class="bi bi-twitter-x me-2"></i>X
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    id="shareWhatsApp"
+                  >
+                    <i class="bi bi-whatsapp me-2"></i>WhatsApp
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    id="shareCopy"
+                  >
+                    <i class="bi bi-clipboard me-2"></i>Copier
+                  </button>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section
+        class="panel state-box d-none"
+        id="stateBox"
+        data-kind="info"
+        aria-live="polite"
+      >
+        <div class="state-icon" id="stateIcon">
+          <i class="bi bi-search"></i>
+        </div>
+        <div>
+          <h2 class="state-title" id="stateTitle">
+            Aucune recherche lanc&eacute;e
+          </h2>
+          <p class="state-copy" id="stateCopy">
+            Le tableau, la carte et la synth&egrave;se se mettront &agrave; jour
+            apr&egrave;s votre premi&egrave;re recherche.
+          </p>
+        </div>
+      </section>
+
+      <div class="tab-content">
+        <div class="tab-pane fade show active" id="listView" role="tabpanel">
+          <section class="panel content-panel">
+            <div class="section-head">
+              <div>
+                <h3>Liste des DPE</h3>
+                <p id="tableMeta">
+                  Le tri, les colonnes visibles et la s&eacute;lection active
+                  seront disponibles apr&egrave;s la premi&egrave;re recherche.
+                </p>
+              </div>
+            </div>
+            <div id="emptyList" class="empty-panel">
+              <div>
+                <i class="bi bi-search"></i>
+                <p class="mt-3 mb-1 fw-semibold">
+                  Lancez une recherche pour afficher les DPE.
+                </p>
+                <p class="mb-0">
+                  Les r&eacute;sultats seront affich&eacute;s ici avec tri,
+                  liens ADEME et acc&egrave;s direct &agrave; la carte.
+                </p>
+              </div>
+            </div>
+            <div id="resBox" class="d-none">
+              <div class="table-wrap">
+                <table
+                  class="table table-hover table-sm align-middle"
+                  id="table"
+                >
+                  <thead></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        </div>
+        <div class="tab-pane fade" id="mapView" role="tabpanel">
+          <section class="panel content-panel">
+            <div class="section-head">
+              <div>
+                <h3>Carte des logements</h3>
+                <p id="mapMeta">
+                  Les marqueurs reprennent la classe DPE et s'ouvrent sur une
+                  fiche r&eacute;sum&eacute;e.
+                </p>
+              </div>
+            </div>
+            <div class="map-wrap">
+              <div id="map" aria-label="Carte des r&eacute;sultats DPE"></div>
+            </div>
+            <p class="map-note mt-2 mb-0" id="mapInfo">
+              La carte se remplira apr&egrave;s votre premi&egrave;re recherche.
+            </p>
+          </section>
+        </div>
+      </div>
+
+      <footer class="panel site-footer">
+        <div class="footer-copy">
+          <p class="footer-title">
+            Détectez plus vite les signaux vendeurs et transformez les nouveaux
+            DPE en opportunités concrètes.
+          </p>
+          <p class="muted">
+            Les résultats sont alimentés par les données publiques ADEME
+            exposées via l’API DPE logements, pour une prospection plus rapide,
+            plus ciblée et plus exploitable.
+          </p>
+          <div class="footer-links">
+            <a
+              href="https://www.data.gouv.fr/dataservices/api-dpe-logements"
+              target="_blank"
+              rel="noreferrer noopener"
+              >Source ADEME via l’API DPE logements</a
+            >
+            <span
+              >© 2026 Thomas Tarbib,
+              <a
+                href="https://github.com/tarbib"
+                target="_blank"
+                rel="noreferrer noopener"
+                >github.com/tarbib</a
+              ></span
+            >
+            <span
+              >Améliorations et corrections Félix Couprie,
+              <a
+                href="https://github.com/felix-couprie"
+                target="_blank"
+                rel="noreferrer noopener"
+                >github.com/felix-couprie</a
+              ></span
+            >
+          </div>
+        </div>
+      </footer>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.js"></script>
+    <script>
+      const API =
+        "https://data.ademe.fr/data-fair/api/v1/datasets/dpe03existant/lines";
+      const REVERSE_GEOCODE_API = "https://api-adresse.data.gouv.fr/reverse/";
+      const STORAGE_KEY = "dpe-explorer-theme-mode";
+      const SYSTEM_THEME = window.matchMedia("(prefers-color-scheme: dark)");
+      const TYPE_OPTIONS = ["Appartement", "Maison", "Immeuble"];
+      const GRADE_OPTIONS = ["A", "B", "C", "D", "E", "F", "G"];
+      const DEFAULT_TYPE_SELECTION = ["Appartement", "Maison"];
+      const DEFAULT_GRADE_SELECTION = ["A", "B", "C"];
+      const COLORS = {
+        A: "#319834",
+        B: "#33cc31",
+        C: "#cbfc34",
+        D: "#fbfe06",
+        E: "#fbcc04",
+        F: "#f68e1e",
+        G: "#ef1d26",
+        Def: "#94a3b8",
+      };
+      const BADGE_TEXT = {
+        A: "#ffffff",
+        B: "#09280d",
+        C: "#1f2937",
+        D: "#1f2937",
+        E: "#1f2937",
+        F: "#111827",
+        G: "#ffffff",
+        Def: "#0f172a",
+      };
+      // Centralize visible columns, cell renderers and tooltip labels in one place.
+      const FIELDS = [
+        {
+          k: "adresse_ban",
+          l: "Adresse",
+          cellClass: "cell-address cell-primary text-break",
+          style: "max-width:280px",
+        },
+        {
+          k: "type_batiment",
+          l: "Type",
+          cellClass: "cell-secondary",
+          f: (v) => formatBuildingType(v),
+        },
+        {
+          k: "surface_habitable_logement",
+          l: "Surface",
+          cellClass: "text-end font-monospace",
+          resolve: (item) => getSurfaceValue(item),
+          f: (v) => formatSurface(v),
+        },
+        {
+          k: "annee_construction",
+          l: "Année",
+          cellClass: "text-center cell-secondary",
+          f: (v, d) => v || d.periode_construction || "-",
+        },
+        {
+          k: "numero_dpe",
+          l: "N° DPE",
+          cellClass: "font-monospace small cell-secondary",
+          toggle: "dpe-id",
+          html: true,
+          f: (v) =>
+            v
+              ? `<a href="https://data.ademe.fr/datasets/dpe03existant/full?p=%2Fdata-fair%2Fembed%2Fdataset%2Fdpe03existant%2Ftable&q=${encodeURIComponent(v)}" target="_blank" rel="noreferrer noopener">${escapeHtml(v)}</a>`
+              : "-",
+        },
+        {
+          k: "etiquette_dpe",
+          l: "DPE",
+          cellClass: "text-center cell-primary",
+          html: true,
+          f: (v) => renderBadge("badge", v),
+        },
+        {
+          k: "etiquette_ges",
+          l: "GES",
+          cellClass: "text-center cell-secondary",
+          toggle: "ges",
+          html: true,
+          f: (v) => renderBadge("badge", v),
+        },
+        {
+          k: "conso_5_usages_par_m2_ep",
+          l: "Conso",
+          labelHtml:
+            '<span class="th-label">Conso <button type="button" class="info-trigger" data-bs-toggle="tooltip" data-bs-placement="top" title="Consommation annuelle d’énergie primaire du logement, rapportée au m², calculée sur 5 usages du DPE."><i class="bi bi-info-circle" aria-hidden="true"></i><span class="visually-hidden">Explication de la consommation énergétique.</span></button></span>',
+          cellClass: "text-end font-monospace cell-secondary",
+          toggle: "conso",
+          f: (v) => (v ? Math.round(v) : "-"),
+        },
+        {
+          k: "date_etablissement_dpe",
+          l: "Date",
+          cellClass: "text-center cell-secondary",
+          toggle: "date",
+          f: (v) => (v ? formatDate(v) : "-"),
+        },
+      ];
+      const SORT_ICON = {
+        neutral: "arrow-down-up",
+        asc: "sort-up",
+        desc: "sort-down",
+      };
+      let appData = [];
+      let sortState = { k: "date_etablissement_dpe", o: -1 };
+      let map;
+      let markers;
+      let markerIndex = new Map();
+      let selectedRowId = null;
+      let themeMode = loadThemeMode();
+      let activeTileLayer = null;
+      let lightTileLayer = null;
+      let darkTileLayer = null;
+      let lastStats = { total: 0, geocoded: 0, ungeocoded: 0 };
+      let hasSearched = false;
+      let lastError = null;
+      let lastShareSummary = null;
+      let filtersCollapsed = false;
+      let defaultPostalCode = "";
+      let postalAutofillAttempted = false;
+      const visibleToggles = new Set(
+        FIELDS.filter((field) => field.toggle).map((field) => field.toggle),
+      );
+
+      function $(id) {
+        return document.getElementById(id);
+      }
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+      function formatDate(value) {
+        return new Date(value).toLocaleDateString("fr-FR");
+      }
+      function formatBuildingType(value) {
+        const text = String(value || "");
+        return text
+          ? text.charAt(0).toUpperCase() + text.slice(1).toLowerCase()
+          : "-";
+      }
+      function normalizeNumber(value) {
+        const number = Number(value);
+        return Number.isFinite(number) ? number : null;
+      }
+      function formatSurface(value) {
+        const surface = normalizeNumber(value);
+        return surface == null ? "-" : Math.round(surface) + " m2";
+      }
+      // The ADEME payload exposes two surface fields depending on the building type.
+      function getSurfaceValue(item) {
+        const type = String(item.type_batiment || "").toLowerCase();
+        const logement = normalizeNumber(item.surface_habitable_logement);
+        const immeuble = normalizeNumber(item.surface_habitable_immeuble);
+        return type.includes("immeuble") ? immeuble : logement;
+      }
+      function geolocationLink(item) {
+        if (!item || !item._geopoint) {
+          return "";
+        }
+        const parts = String(item._geopoint)
+          .split(",")
+          .map((value) => Number(value));
+        const lat = parts[0];
+        const lng = parts[1];
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+          return "";
+        }
+        return `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=18/${lat}/${lng}`;
+      }
+      function fieldLabel(field) {
+        return field.k === "numero_dpe" ? "N&deg; DPE" : escapeHtml(field.l);
+      }
+      function pluralize(count, singular, plural) {
+        return count > 1 ? plural : singular;
+      }
+      function summarizeSelection(values, allValues, allLabel) {
+        if (!values.length) {
+          return "aucun";
+        }
+        return values.length === allValues.length
+          ? allLabel
+          : values.join(", ");
+      }
+      function textLabel(field) {
+        return field.k === "numero_dpe" ? "N° DPE" : field.l;
+      }
+      function tooltipLabel(label, title, srText) {
+        return `<span class="th-label">${label} <button type="button" class="info-trigger" data-bs-toggle="tooltip" data-bs-placement="top" title="${title}"><i class="bi bi-info-circle" aria-hidden="true"></i><span class="visually-hidden">${srText}</span></button></span>`;
+      }
+      function enhanceFieldLabels() {
+        FIELDS.forEach((field) => {
+          if (field.k === "annee_construction") {
+            field.l = "Année";
+            field.labelHtml = tooltipLabel(
+              "Année",
+              "Année de construction renseignée dans le DPE. Si elle est absente, la période de construction est affichée.",
+              "Explication de l’année de construction.",
+            );
+          }
+          if (field.k === "numero_dpe") {
+            field.l = "N° DPE";
+            field.labelHtml = tooltipLabel(
+              "N&deg; DPE",
+              "Identifiant unique du diagnostic dans la base ADEME. Le lien ouvre la fiche correspondante.",
+              "Explication du numéro DPE.",
+            );
+          }
+          if (field.k === "surface_habitable_logement") {
+            field.l = "Surface";
+            field.labelHtml = tooltipLabel(
+              "Surface",
+              "Surface habitable retenue par le DPE : celle du logement pour un appartement ou une maison, ou celle de l’immeuble si le type est Immeuble.",
+              "Explication de la surface habitable.",
+            );
+          }
+          if (field.k === "etiquette_dpe") {
+            field.labelHtml = tooltipLabel(
+              "DPE",
+              "Classe de performance énergétique du bien, de A à G, calculée à partir de la consommation énergétique.",
+              "Explication de la classe DPE.",
+            );
+          }
+          if (field.k === "etiquette_ges") {
+            field.labelHtml = tooltipLabel(
+              "GES",
+              "Classe d’émissions de gaz à effet de serre du bien, de A à G.",
+              "Explication de la classe GES.",
+            );
+          }
+          if (field.k === "date_etablissement_dpe") {
+            field.labelHtml = tooltipLabel(
+              "Date",
+              "Date d’établissement du DPE, c’est-à-dire la date à laquelle le diagnostic a été réalisé.",
+              "Explication de la date du DPE.",
+            );
+          }
+        });
+      }
+      function setPostalHelp(message, isError = false) {
+        $("postalHelp").textContent = message;
+        $("postalHelp").classList.toggle("is-error", isError);
+      }
+      async function reverseGeocodePostalCode(lat, lon) {
+        const response = await fetch(
+          `${REVERSE_GEOCODE_API}?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`,
+        );
+        if (!response.ok) {
+          throw new Error("reverse geocode failed");
+        }
+        const payload = await response.json();
+        const postcode = payload?.features?.[0]?.properties?.postcode || "";
+        return /^\d{5}$/.test(postcode) ? postcode : "";
+      }
+      async function tryAutofillPostalCode() {
+        if (postalAutofillAttempted) {
+          return;
+        }
+        postalAutofillAttempted = true;
+        if ($("postal").value.trim()) {
+          setPostalHelp(
+            "Un ou plusieurs codes postaux, séparés par une virgule ou un espace.",
+          );
+          return;
+        }
+        if (!navigator.geolocation) {
+          setPostalHelp(
+            "Géolocalisation indisponible : aucun code postal par défaut n a pu être proposé.",
+          );
+          return;
+        }
+        setPostalHelp(
+          "Recherche de votre code postal à partir de votre localisation…",
+        );
+        const getPosition = () =>
+          new Promise((resolve, reject) =>
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+              enableHighAccuracy: false,
+              timeout: 8000,
+              maximumAge: 300000,
+            }),
+          );
+        try {
+          const position = await getPosition();
+          const postcode = await reverseGeocodePostalCode(
+            position.coords.latitude,
+            position.coords.longitude,
+          );
+          if (postcode) {
+            defaultPostalCode = postcode;
+            if (!$("postal").value.trim()) {
+              $("postal").value = postcode;
+              updateFilterSummary();
+            }
+            setPostalHelp(`Code postal détecté automatiquement : ${postcode}.`);
+            return;
+          }
+          setPostalHelp(
+            "Localisation détectée, mais aucun code postal exploitable n a été trouvé.",
+          );
+        } catch (error) {
+          console.warn("Autoremplissage du code postal impossible.", error);
+          setPostalHelp(
+            "Code postal non prérempli : autorisation refusée ou localisation indisponible.",
+          );
+        }
+      }
+      function setCheckboxSelection(selector, values) {
+        const allowed = new Set(values);
+        document.querySelectorAll(selector).forEach((input) => {
+          input.checked = allowed.has(input.value);
+        });
+      }
+      function selectedTypes(filters) {
+        return filters.types.length ? filters.types : TYPE_OPTIONS;
+      }
+      function surfaceMode(filters) {
+        const types = selectedTypes(filters);
+        const hasImmeuble = types.includes("Immeuble");
+        const hasLogement = types.some(
+          (type) => type === "Appartement" || type === "Maison",
+        );
+        if (hasImmeuble && hasLogement) {
+          return "mixed";
+        }
+        return hasImmeuble ? "immeuble" : "logement";
+      }
+      function applySurfaceGuidance(filters = getFilterState()) {
+        const mode = surfaceMode(filters);
+        if (mode === "immeuble") {
+          $("surfaceMinLabel").innerHTML =
+            "Surface habitable immeuble min (m&sup2;)";
+          $("surfaceMaxLabel").innerHTML =
+            "Surface habitable immeuble max (m&sup2;)";
+          $("surfaceHelp").innerHTML =
+            "Pour un immeuble, la surface correspond &agrave; la surface habitable de l&apos;immeuble, et non &agrave; la surface du terrain.";
+          return;
+        }
+        if (mode === "mixed") {
+          $("surfaceMinLabel").innerHTML = "Surface habitable min (m&sup2;)";
+          $("surfaceMaxLabel").innerHTML = "Surface habitable max (m&sup2;)";
+          $("surfaceHelp").innerHTML =
+            "Appartement et maison utilisent la surface habitable du logement. Immeuble utilise la surface habitable de l&apos;immeuble. Le jardin, le terrain, la cave et le garage ne sont pas inclus.";
+          return;
+        }
+        $("surfaceMinLabel").innerHTML =
+          "Surface habitable logement min (m&sup2;)";
+        $("surfaceMaxLabel").innerHTML =
+          "Surface habitable logement max (m&sup2;)";
+        $("surfaceHelp").innerHTML =
+          "Pour un appartement ou une maison, la surface correspond &agrave; la surface habitable du logement, hors jardin, terrain, cave et garage.";
+      }
+      function validateFilters(filters = getFilterState()) {
+        const missing = [];
+        if (!filters.postalCodes.length) {
+          missing.push("au moins un code postal");
+        }
+        if (!filters.types.length) {
+          missing.push("au moins un type de bâtiment");
+        }
+        if (!filters.grades.length) {
+          missing.push("au moins une classe DPE");
+        }
+        if (!filters.dateStart && !filters.dateEnd) {
+          missing.push("au moins une date");
+        }
+        return { valid: missing.length === 0, missing };
+      }
+      function updateSearchEligibility(filters = getFilterState()) {
+        const validation = validateFilters(filters);
+        $("searchBtn").disabled = !validation.valid;
+        $("searchRequirements").textContent = validation.valid
+          ? "Critères minimums remplis. Vous pouvez lancer la recherche."
+          : `Renseignez ${validation.missing.join(", ")} pour lancer la recherche.`;
+        $("searchRequirements").classList.toggle("is-error", !validation.valid);
+        return validation;
+      }
+      function matchesSurfaceFilter(item, filters) {
+        if (!filters.surfaceMin && !filters.surfaceMax) {
+          return true;
+        }
+        const surface = getSurfaceValue(item);
+        if (surface == null) {
+          return false;
+        }
+        if (filters.surfaceMin && surface < Number(filters.surfaceMin)) {
+          return false;
+        }
+        if (filters.surfaceMax && surface > Number(filters.surfaceMax)) {
+          return false;
+        }
+        return true;
+      }
+      function filterResults(results, filters, limit) {
+        return results
+          .filter((item) => matchesSurfaceFilter(item, filters))
+          .slice(0, limit);
+      }
+      function renderCompactFilters(filters = getFilterState()) {
+        $("compactFilterChips").innerHTML = buildFilterChips(filters)
+          .map(
+            (chip) =>
+              `<span class="summary-chip"><i class="bi bi-${chip.icon}" aria-hidden="true"></i>${escapeHtml(chip.text)}</span>`,
+          )
+          .join("");
+      }
+      function setFiltersCollapsed(collapsed, options = {}) {
+        // After a successful search, switch to a compact sticky summary to surface results faster.
+        filtersCollapsed = Boolean(collapsed) && hasSearched;
+        $("filtersCompact").classList.toggle("d-none", !filtersCollapsed);
+        $("filtersFormBody").classList.toggle("d-none", filtersCollapsed);
+        $("filtersPanel").classList.toggle(
+          "filters-panel-collapsed",
+          filtersCollapsed,
+        );
+        if (filtersCollapsed) {
+          renderCompactFilters();
+        }
+        if (options.focusFilters && !filtersCollapsed) {
+          $("postal").focus();
+        }
+      }
+      function scrollToResults() {
+        const target = $("resultsBar").classList.contains("d-none")
+          ? $("listView")
+          : $("resultsBar");
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      function activeShareUrl() {
+        if (!window.location || !/^https?:$/.test(window.location.protocol)) {
+          return "";
+        }
+        if (["localhost", "127.0.0.1"].includes(window.location.hostname)) {
+          return "";
+        }
+        return window.location.href;
+      }
+      function buildShareSummary() {
+        const filters = getFilterState();
+        const sample = appData.slice(0, 5).map((item) => {
+          const address = item.adresse_ban || "Adresse inconnue";
+          const type = formatBuildingType(item.type_batiment);
+          const dpe = item.etiquette_dpe || "-";
+          const ges = item.etiquette_ges || "-";
+          const surface = formatSurface(getSurfaceValue(item));
+          const date = item.date_etablissement_dpe
+            ? formatDate(item.date_etablissement_dpe)
+            : "-";
+          const link = geolocationLink(item);
+          return `${address} | ${type} | DPE ${dpe} | GES ${ges} | ${surface} | ${date}${link ? ` | Carte : ${link}` : ""}`;
+        });
+        const intro = `${lastStats.total} ${pluralize(lastStats.total, "résultat", "résultats")} DPE pour ${filters.postalCodes.length ? filters.postalCodes.join(", ") : "la zone sélectionnée"}`;
+        const filterLine = `Filtres : types ${summarizeSelection(filters.types, TYPE_OPTIONS, "tous")}, DPE ${summarizeSelection(filters.grades, GRADE_OPTIONS, "toutes")}, période ${filters.dateStart ? formatDate(filters.dateStart) : "?"} -> ${filters.dateEnd ? formatDate(filters.dateEnd) : "?"}, surface ${filters.surfaceMin || "0"} - ${filters.surfaceMax || "inf"} m2.`;
+        const statsLine = `${lastStats.geocoded} géolocalisés, ${lastStats.ungeocoded} sans géopoint. Source : ADEME.`;
+        const previewLines = [intro, filterLine, statsLine];
+        if (sample.length) {
+          previewLines.push(
+            "",
+            "Principaux résultats :",
+            ...sample.map((line) => `- ${line}`),
+          );
+        }
+        const preview = previewLines.filter(Boolean).join("\n");
+        const firstSharedLink =
+          appData.map((item) => geolocationLink(item)).find(Boolean) || "";
+        const short = `${intro}. ${statsLine}${firstSharedLink ? ` Carte : ${firstSharedLink}.` : ""}`;
+        const url = activeShareUrl();
+        return {
+          subject: `Observatoire DPE - ${intro}`,
+          preview,
+          emailBody: `Bonjour,\n\n${preview}${url ? `\n\nLien : ${url}` : ""}\n`,
+          socialText: `${short}${sample[0] ? ` Exemple : ${sample[0]}.` : ""}${url ? ` ${url}` : ""}`,
+          hasData: hasSearched && !lastError && lastStats.total > 0,
+        };
+      }
+      function refreshShareSummary() {
+        lastShareSummary = buildShareSummary();
+        $("shareMeta").textContent = lastShareSummary.hasData
+          ? `${lastStats.total} résultats prêts à être partagés.`
+          : "Aucun résultat à partager";
+        [
+          "shareEmail",
+          "shareX",
+          "shareWhatsApp",
+          "shareCopy",
+          "openShareModal",
+        ].forEach((id) => {
+          if ($(id)) {
+            $(id).disabled = !lastShareSummary.hasData;
+          }
+        });
+      }
+      function openShareUrl(url) {
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
+      function shareByEmail() {
+        if (!lastShareSummary?.hasData) {
+          return;
+        }
+        window.location.href = `mailto:?subject=${encodeURIComponent(lastShareSummary.subject)}&body=${encodeURIComponent(lastShareSummary.emailBody)}`;
+      }
+      function shareOnX() {
+        if (!lastShareSummary?.hasData) {
+          return;
+        }
+        openShareUrl(
+          `https://twitter.com/intent/tweet?text=${encodeURIComponent(lastShareSummary.socialText)}`,
+        );
+      }
+      function shareOnWhatsApp() {
+        if (!lastShareSummary?.hasData) {
+          return;
+        }
+        openShareUrl(
+          `https://wa.me/?text=${encodeURIComponent(lastShareSummary.socialText)}`,
+        );
+      }
+      async function copyShareText() {
+        if (!lastShareSummary?.hasData) {
+          return;
+        }
+        try {
+          await navigator.clipboard.writeText(lastShareSummary.preview);
+          setState(
+            "success",
+            "Résumé copié",
+            "Le résumé des résultats a été copié dans le presse-papiers.",
+            "clipboard-check",
+          );
+        } catch (error) {
+          console.error(error);
+          setState(
+            "error",
+            "Copie impossible",
+            "Le navigateur a refusé la copie. Essayez l’email ou un réseau social.",
+            "clipboard-x",
+          );
+        }
+      }
+      function renderBadge(type, value, size = 30, iconName = "building") {
+        const grade = value || "-";
+        const color = COLORS[grade] || COLORS.Def;
+        const textColor = BADGE_TEXT[grade] || BADGE_TEXT.Def;
+        if (type === "badge") {
+          return `<span class="grade-badge" aria-label="Classe ${escapeHtml(grade)}" style="background:${color};color:${textColor};min-width:${size}px;min-height:${size}px"><span class="visually-hidden">Classe </span>${escapeHtml(grade)}</span>`;
+        }
+        if (type === "pin") {
+          return `<div class="custom-pin" aria-hidden="true" style="background:${color};color:${textColor};width:${size}px;height:${size}px"><i class="bi bi-${iconName}"></i></div>`;
+        }
+        return "-";
+      }
+      function loadThemeMode() {
+        try {
+          return localStorage.getItem(STORAGE_KEY) || "auto";
+        } catch (error) {
+          return "auto";
+        }
+      }
+      function resolvedTheme(mode = themeMode) {
+        return mode === "auto"
+          ? SYSTEM_THEME.matches
+            ? "dark"
+            : "light"
+          : mode;
+      }
+      function persistTheme(mode) {
+        try {
+          localStorage.setItem(STORAGE_KEY, mode);
+        } catch (error) {
+          console.warn("Impossible de sauvegarder le theme.", error);
+        }
+      }
+      function applyTheme(mode, persist = true) {
+        themeMode = mode;
+        document.documentElement.dataset.themeMode = mode;
+        document.documentElement.dataset.theme = resolvedTheme(mode);
+        if (persist) {
+          persistTheme(mode);
+        }
+        document.querySelectorAll("[data-theme-mode]").forEach((button) => {
+          const active = button.dataset.themeMode === mode;
+          button.classList.toggle("active", active);
+          button.setAttribute("aria-pressed", String(active));
+        });
+        syncMapTiles();
+      }
+      function syncMapTiles() {
+        if (!map || !lightTileLayer || !darkTileLayer) {
+          return;
+        }
+        const wantedLayer =
+          resolvedTheme() === "dark" ? darkTileLayer : lightTileLayer;
+        if (activeTileLayer === wantedLayer) {
+          return;
+        }
+        if (activeTileLayer) {
+          map.removeLayer(activeTileLayer);
+        }
+        wantedLayer.addTo(map);
+        activeTileLayer = wantedLayer;
+      }
+      function setDefaultDates(days = 90) {
+        const end = new Date();
+        const start = new Date(end);
+        start.setDate(start.getDate() - days);
+        $("dEnd").valueAsDate = end;
+        $("dStart").valueAsDate = start;
+      }
+      function setAllCheckboxes(selector, checked) {
+        document.querySelectorAll(selector).forEach((input) => {
+          input.checked = checked;
+        });
+      }
+      function initTheme() {
+        document.querySelectorAll("[data-theme-mode]").forEach((button) => {
+          button.addEventListener("click", () =>
+            applyTheme(button.dataset.themeMode),
+          );
+        });
+        const onSystemThemeChange = () => {
+          if (themeMode === "auto") {
+            applyTheme("auto", false);
+          }
+        };
+        if (SYSTEM_THEME.addEventListener) {
+          SYSTEM_THEME.addEventListener("change", onSystemThemeChange);
+        } else if (SYSTEM_THEME.addListener) {
+          SYSTEM_THEME.addListener(onSystemThemeChange);
+        }
+        applyTheme(themeMode, false);
+      }
+      function buildOptionToggle(
+        containerId,
+        values,
+        prefix,
+        className,
+        theme,
+      ) {
+        const container = $(containerId);
+        container.innerHTML = "";
+        values.forEach((value) => {
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.className = `btn-check ${className}`;
+          input.id = `${prefix}${value}`;
+          input.value = value;
+          input.checked = true;
+          const appearance = theme(value);
+          const label = document.createElement("label");
+          label.className = `btn btn-sm ${typeof appearance === "string" ? appearance : appearance.className || ""}`;
+          label.htmlFor = input.id;
+          label.textContent = value;
+          if (typeof appearance === "object" && appearance.style) {
+            label.style.cssText = appearance.style;
+          }
+          input.addEventListener("change", updateFilterSummary);
+          container.append(input, label);
+        });
+      }
+      function initMap() {
+        map = L.map("map", {
+          fullscreenControl: true,
+          zoomControl: true,
+        }).setView([46.6, 1.9], 6);
+        lightTileLayer = L.tileLayer(
+          "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+          { attribution: "&copy; OpenStreetMap contributors" },
+        );
+        darkTileLayer = L.tileLayer(
+          "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+          { attribution: "&copy; OpenStreetMap contributors &copy; CARTO" },
+        );
+        markers = L.layerGroup().addTo(map);
+        syncMapTiles();
+      }
+      function initColumnToggles() {
+        const menu = $("colToggles");
+        menu.innerHTML = "";
+        FIELDS.filter((field) => field.toggle).forEach((field) => {
+          const li = document.createElement("li");
+          const label = document.createElement("label");
+          label.className = "dropdown-item d-flex align-items-center gap-2";
+          label.innerHTML = `<input type="checkbox" class="form-check-input m-0" ${visibleToggles.has(field.toggle) ? "checked" : ""}> ${fieldLabel(field)}`;
+          label.querySelector("input").addEventListener("change", (event) => {
+            if (event.target.checked) {
+              visibleToggles.add(field.toggle);
+            } else {
+              visibleToggles.delete(field.toggle);
+            }
+            renderTableHead();
+            renderData();
+          });
+          li.appendChild(label);
+          menu.appendChild(li);
+        });
+      }
+      function sortIcon(fieldKey) {
+        if (sortState.k !== fieldKey) {
+          return SORT_ICON.neutral;
+        }
+        return sortState.o === 1 ? SORT_ICON.asc : SORT_ICON.desc;
+      }
+      function renderTableHead() {
+        const thead = $("table").querySelector("thead");
+        const headerCells = FIELDS.map((field) => {
+          const hiddenClass =
+            field.toggle && !visibleToggles.has(field.toggle) ? "d-none" : "";
+          const label = field.labelHtml || fieldLabel(field);
+          const icon =
+            sortState.k === field.k
+              ? `<i class="bi bi-${sortIcon(field.k)} sort-icon" aria-hidden="true"></i>`
+              : "";
+          return `<th scope="col" class="${hiddenClass}"><button type="button" class="sort-trigger" data-sort="${field.k}" aria-label="Trier par ${escapeHtml(field.k === "numero_dpe" ? "N° DPE" : field.l)}"><span>${label}</span>${icon}</button></th>`;
+        }).join("");
+        thead.innerHTML = `<tr>${headerCells}<th scope="col">Localisation</th></tr>`;
+        thead.querySelectorAll("[data-sort]").forEach((button) => {
+          button.addEventListener("click", () => App.sort(button.dataset.sort));
+        });
+        thead
+          .querySelectorAll('[data-bs-toggle="tooltip"]')
+          .forEach((node) => bootstrap.Tooltip.getOrCreateInstance(node));
+      }
+      function getFilterState() {
+        return {
+          postalCodes: $("postal")
+            .value.split(/[\s,]+/)
+            .filter(Boolean),
+          types: [...document.querySelectorAll(".type-filter:checked")].map(
+            (input) => input.value,
+          ),
+          grades: [...document.querySelectorAll(".grade-filter:checked")].map(
+            (input) => input.value,
+          ),
+          dateStart: $("dStart").value,
+          dateEnd: $("dEnd").value,
+          surfaceMin: $("sMin").value,
+          surfaceMax: $("sMax").value,
+          limit: Math.min(Math.max(Number($("limit").value) || 100, 1), 1000),
+        };
+      }
+      function buildFilterChips(filters) {
+        return [
+          {
+            icon: "geo-alt",
+            text: filters.postalCodes.length
+              ? `Zone : ${filters.postalCodes.join(", ")}`
+              : "Zone : toutes",
+          },
+          {
+            icon: "house",
+            text: `Types : ${summarizeSelection(filters.types, TYPE_OPTIONS, "tous")}`,
+          },
+          {
+            icon: "speedometer2",
+            text: `DPE : ${summarizeSelection(filters.grades, GRADE_OPTIONS, "toutes")}`,
+          },
+          {
+            icon: "calendar3",
+            text:
+              filters.dateStart || filters.dateEnd
+                ? `Date DPE : ${filters.dateStart ? formatDate(filters.dateStart) : "?"} -> ${filters.dateEnd ? formatDate(filters.dateEnd) : "?"}`
+                : "Date DPE : non filtrée",
+          },
+          {
+            icon: "aspect-ratio",
+            text:
+              filters.surfaceMin || filters.surfaceMax
+                ? `Surface : ${filters.surfaceMin || "0"} - ${filters.surfaceMax || "inf"} m2`
+                : "Surface : toutes",
+          },
+          { icon: "list-ol", text: `Résultats max : ${filters.limit}` },
+        ];
+      }
+      function updateFilterSummary() {
+        const filters = getFilterState();
+        applySurfaceGuidance(filters);
+        updateSearchEligibility(filters);
+        renderCompactFilters(filters);
+        updateResultsToolbar();
+      }
+      function buildParams(filters = getFilterState()) {
+        // Fetch extra rows when a surface range is active because that filter is refined client-side.
+        const fetchSize =
+          filters.surfaceMin || filters.surfaceMax
+            ? Math.min(Math.max(filters.limit * 3, filters.limit), 1000)
+            : filters.limit;
+        const params = {
+          size: fetchSize,
+          select:
+            FIELDS.map((field) => field.k).join(",") +
+            ",surface_habitable_immeuble,code_postal_ban,_geopoint,periode_construction",
+        };
+        const queryParts = [
+          filters.postalCodes.length
+            ? `(${filters.postalCodes.map((code) => `code_postal_brut:${code}`).join(" OR ")})`
+            : null,
+          filters.types.length
+            ? `(${filters.types.map((type) => `type_batiment:${type.toLowerCase()}`).join(" OR ")})`
+            : null,
+          filters.grades.length
+            ? `(${filters.grades.map((grade) => `etiquette_dpe:${grade}`).join(" OR ")})`
+            : null,
+        ].filter(Boolean);
+        if (queryParts.length) {
+          params.qs = queryParts.join(" AND ");
+        }
+        [
+          ["date_etablissement_dpe_gte", "dateStart"],
+          ["date_etablissement_dpe_lte", "dateEnd"],
+        ].forEach(([paramName, key]) => {
+          if (filters[key]) {
+            params[paramName] = filters[key];
+          }
+        });
+        return new URLSearchParams(params).toString();
+      }
+      function buildResultsSummary(filters) {
+        const parts = [];
+        if (filters.postalCodes.length) {
+          parts.push(`zone ${filters.postalCodes.join(", ")}`);
+        }
+        parts.push(
+          `types ${summarizeSelection(filters.types, TYPE_OPTIONS, "tous")}`,
+        );
+        parts.push(
+          `DPE ${summarizeSelection(filters.grades, GRADE_OPTIONS, "toutes")}`,
+        );
+        if (filters.dateStart || filters.dateEnd) {
+          parts.push(
+            `periode ${filters.dateStart ? formatDate(filters.dateStart) : "?"} -> ${filters.dateEnd ? formatDate(filters.dateEnd) : "?"}`,
+          );
+        }
+        if (filters.surfaceMin || filters.surfaceMax) {
+          parts.push(
+            `surface ${filters.surfaceMin || "0"} - ${filters.surfaceMax || "inf"} m2`,
+          );
+        }
+        parts.push(`limite ${filters.limit}`);
+        return parts.join(" - ");
+      }
+      function updateResultsToolbar() {
+        const filters = getFilterState();
+        const summary = buildResultsSummary(filters);
+        const resultsBar = $("resultsBar");
+        $("countPill").innerHTML =
+          `<i class="bi bi-list-ul"></i>${lastStats.total} ${pluralize(lastStats.total, "résultat", "résultats")}`;
+        if (!hasSearched) {
+          resultsBar.classList.add("d-none");
+          $("resultsMeta").textContent = "";
+          $("tableMeta").textContent =
+            "Le tri, les colonnes visibles et la sélection active seront disponibles après la première recherche.";
+          $("mapMeta").textContent =
+            "La carte affichera ensuite les logements géolocalisés correspondant à vos filtres.";
+          refreshShareSummary();
+          return;
+        }
+        resultsBar.classList.remove("d-none");
+        if (lastError) {
+          $("resultsMeta").textContent = "Recherche en erreur.";
+          $("tableMeta").textContent =
+            "Aucun résultat fiable à afficher tant que la requête n’a pas abouti.";
+          $("mapMeta").textContent =
+            "La carte attend une réponse valide de l’API avant d’afficher des marqueurs.";
+          refreshShareSummary();
+          return;
+        }
+        if (!lastStats.total) {
+          $("resultsMeta").textContent = "Aucun résultat pour ces critères.";
+          $("tableMeta").textContent =
+            "Le tableau reste vide, car aucun DPE ne correspond à cette combinaison de filtres.";
+          $("mapMeta").textContent =
+            "La carte n’a aucun logement à afficher pour cette recherche.";
+          refreshShareSummary();
+          return;
+        }
+        $("resultsMeta").textContent =
+          `${lastStats.geocoded} géolocalisés, ${lastStats.ungeocoded} sans géopoint.`;
+        $("tableMeta").textContent =
+          "Cliquez sur un en-tête pour trier, puis utilisez l’icône de localisation pour centrer un logement sur la carte.";
+        $("mapMeta").textContent =
+          "Les marqueurs sont colorés selon la classe DPE. Les logements sans géopoint restent consultables dans la liste.";
+        refreshShareSummary();
+      }
+      function setState(kind, title, copy, icon) {
+        const stateBox = $("stateBox");
+        stateBox.dataset.kind = kind;
+        $("stateIcon").innerHTML =
+          `<i class="bi bi-${icon}" aria-hidden="true"></i>`;
+        $("stateTitle").textContent = title;
+        $("stateCopy").textContent = copy;
+        stateBox.classList.toggle("d-none", kind === "success");
+      }
+      function resetResults(keepSearchState = false) {
+        appData = [];
+        selectedRowId = null;
+        markerIndex = new Map();
+        lastStats = { total: 0, geocoded: 0, ungeocoded: 0 };
+        lastError = null;
+        if (!keepSearchState) {
+          hasSearched = false;
+          setFiltersCollapsed(false);
+        }
+        renderData();
+        updateResultsToolbar();
+      }
+      function setDefaultFilters() {
+        $("postal").value = defaultPostalCode;
+        $("sMin").value = "";
+        $("sMax").value = "";
+        $("limit").value = "100";
+        setDefaultDates(90);
+        setCheckboxSelection(".type-filter", DEFAULT_TYPE_SELECTION);
+        setCheckboxSelection(".grade-filter", DEFAULT_GRADE_SELECTION);
+        setPostalHelp(
+          defaultPostalCode
+            ? `Code postal détecté automatiquement : ${defaultPostalCode}.`
+            : "Un ou plusieurs codes postaux, séparés par une virgule ou un espace.",
+        );
+      }
+      function applySort() {
+        if (!sortState.k) {
+          return;
+        }
+        const activeField = FIELDS.find((field) => field.k === sortState.k);
+        appData.sort((left, right) => {
+          const valueA =
+            activeField && activeField.resolve
+              ? activeField.resolve(left)
+              : left[sortState.k];
+          const valueB =
+            activeField && activeField.resolve
+              ? activeField.resolve(right)
+              : right[sortState.k];
+          if (valueA == null || valueA === "") {
+            return 1 * sortState.o;
+          }
+          if (valueB == null || valueB === "") {
+            return -1 * sortState.o;
+          }
+          if (typeof valueA === "number" && typeof valueB === "number") {
+            return (valueA - valueB) * sortState.o;
+          }
+          return (
+            String(valueA).localeCompare(String(valueB), undefined, {
+              numeric: true,
+              sensitivity: "base",
+            }) * sortState.o
+          );
+        });
+      }
+      function getFieldValue(field, item) {
+        const value = field.resolve ? field.resolve(item) : item[field.k];
+        if (value == null || value === "") {
+          return "-";
+        }
+        if (field.f) {
+          return field.f(value, item);
+        }
+        return String(value);
+      }
+      function popupContent(item) {
+        const rows = FIELDS.map((field) => {
+          const value = getFieldValue(field, item);
+          return `<dt>${fieldLabel(field)}</dt><dd>${field.html ? value : escapeHtml(value)}</dd>`;
+        }).join("");
+        return `<div class="fw-bold border-bottom pb-2 mb-2">${escapeHtml(item.adresse_ban || "Adresse inconnue")}</div><dl class="popup-grid">${rows}</dl>`;
+      }
+      function markerIconName(type) {
+        const normalized = String(type || "").toLowerCase();
+        if (normalized.includes("maison")) {
+          return "house-door-fill";
+        }
+        if (normalized.includes("immeuble")) {
+          return "buildings-fill";
+        }
+        return "building";
+      }
+      function renderRows() {
+        const tbody = $("table").querySelector("tbody");
+        tbody.innerHTML = "";
+        appData.forEach((item) => {
+          const row = document.createElement("tr");
+          row.dataset.rowId = item.numero_dpe || "";
+          row.className =
+            item.numero_dpe && item.numero_dpe === selectedRowId
+              ? "selected-row"
+              : "";
+          const cells = FIELDS.map((field) => {
+            const hiddenClass =
+              field.toggle && !visibleToggles.has(field.toggle) ? "d-none" : "";
+            const value = getFieldValue(field, item);
+            return `<td class="${[field.cellClass || "", hiddenClass].join(" ").trim()}" style="${field.style || ""}">${field.html ? value : escapeHtml(value)}</td>`;
+          }).join("");
+          row.innerHTML = `${cells}<td class="text-center"><button type="button" class="btn btn-sm btn-soft" data-zoom="${item.numero_dpe || ""}" aria-label="Voir la localisation sur la carte"><i class="bi bi-geo-alt" aria-hidden="true"></i></button></td>`;
+          tbody.appendChild(row);
+        });
+        tbody.querySelectorAll("[data-zoom]").forEach((button) => {
+          button.addEventListener("click", () => App.zoom(button.dataset.zoom));
+        });
+      }
+      function renderMarkers() {
+        markers.clearLayers();
+        markerIndex = new Map();
+        const bounds = [];
+        let geocoded = 0;
+        appData.forEach((item) => {
+          if (!item._geopoint) {
+            return;
+          }
+          const parts = String(item._geopoint).split(",").map(Number);
+          const lat = parts[0];
+          const lng = parts[1];
+          if (Number.isNaN(lat) || Number.isNaN(lng)) {
+            return;
+          }
+          const marker = L.marker([lat, lng], {
+            icon: L.divIcon({
+              html: renderBadge(
+                "pin",
+                item.etiquette_dpe,
+                34,
+                markerIconName(item.type_batiment),
+              ),
+              className: "",
+              iconSize: [34, 34],
+            }),
+          }).bindPopup(popupContent(item));
+          marker.did = item.numero_dpe || "";
+          marker.on("click", () => App.selectRow(marker.did, false));
+          marker.addTo(markers);
+          markerIndex.set(marker.did, marker);
+          bounds.push([lat, lng]);
+          geocoded += 1;
+        });
+        if (bounds.length) {
+          map.fitBounds(bounds, { padding: [24, 24] });
+        } else {
+          map.setView([46.6, 1.9], 6);
+        }
+        return geocoded;
+      }
+      function renderData() {
+        if (!appData.length) {
+          $("resBox").classList.add("d-none");
+          $("emptyList").classList.remove("d-none");
+          $("mapInfo").textContent = hasSearched
+            ? "Aucun logement géolocalisé à afficher pour cette recherche."
+            : "La carte se remplira après votre première recherche.";
+          markers.clearLayers();
+          return;
+        }
+        $("emptyList").classList.add("d-none");
+        $("resBox").classList.remove("d-none");
+        renderTableHead();
+        renderRows();
+        const geocoded = renderMarkers();
+        const ungeocoded = Math.max(appData.length - geocoded, 0);
+        lastStats = { total: appData.length, geocoded, ungeocoded };
+        $("mapInfo").textContent = ungeocoded
+          ? `${geocoded} résultats sont localisés sur la carte. ${ungeocoded} restent disponibles uniquement dans la liste, faute de géopoint.`
+          : `${geocoded} résultats sont géolocalisés et visibles sur la carte.`;
+      }
+      const App = {
+        async search() {
+          const searchButton = $("searchBtn");
+          const filters = getFilterState();
+          const validation = updateSearchEligibility(filters);
+          if (!validation.valid) {
+            setState(
+              "warning",
+              "Recherche incomplète",
+              `Renseignez ${validation.missing.join(", ")} avant de lancer la recherche.`,
+              "sliders",
+            );
+            return;
+          }
+          hasSearched = true;
+          lastError = null;
+          selectedRowId = null;
+          lastStats = { total: 0, geocoded: 0, ungeocoded: 0 };
+          updateResultsToolbar();
+          setState(
+            "info",
+            "Recherche en cours",
+            "L’application interroge les données ADEME avec vos filtres actuels.",
+            "hourglass-split",
+          );
+          searchButton.disabled = true;
+          searchButton.innerHTML =
+            '<span class="spinner-wrap"><span class="spinner-border spinner-border-sm" aria-hidden="true"></span>Recherche...</span>';
+          try {
+            const response = await fetch(`${API}?${buildParams(filters)}`);
+            if (!response.ok) {
+              throw new Error(response.statusText || "API error");
+            }
+            const payload = await response.json();
+            appData = filterResults(
+              payload.results || [],
+              filters,
+              filters.limit,
+            );
+            applySort();
+            renderData();
+            setFiltersCollapsed(true);
+            if (!appData.length) {
+              setState(
+                "warning",
+                "Aucun DPE trouvé",
+                "Aucun logement ne correspond à cette combinaison de filtres. Essayez une zone plus large ou une période plus longue.",
+                "inbox",
+              );
+            } else {
+              setState(
+                "success",
+                "Résultats chargés",
+                `${appData.length} ${pluralize(appData.length, "DPE a été chargé", "DPE ont été chargés")}, avec ${lastStats.geocoded} géopoints exploitables sur la carte.`,
+                "check-circle",
+              );
+            }
+            setTimeout(scrollToResults, 80);
+          } catch (error) {
+            console.error(error);
+            lastError = error;
+            resetResults(true);
+            setFiltersCollapsed(false);
+            setState(
+              "error",
+              "Erreur API",
+              "La requête n’a pas abouti. Vérifiez votre connexion ou réessayez avec une recherche plus simple.",
+              "exclamation-triangle",
+            );
+          } finally {
+            updateResultsToolbar();
+            searchButton.disabled = false;
+            searchButton.innerHTML =
+              '<i class="bi bi-search me-2"></i>Lancer la recherche';
+            updateSearchEligibility();
+          }
+        },
+        sort(fieldKey) {
+          sortState = {
+            k: fieldKey,
+            o: sortState.k === fieldKey && sortState.o === 1 ? -1 : 1,
+          };
+          applySort();
+          renderData();
+          updateResultsToolbar();
+        },
+        selectRow(id, scrollIntoView = true) {
+          selectedRowId = id || null;
+          document.querySelectorAll("tbody tr").forEach((row) => {
+            row.classList.toggle(
+              "selected-row",
+              row.dataset.rowId === selectedRowId,
+            );
+            if (scrollIntoView && row.dataset.rowId === selectedRowId) {
+              row.scrollIntoView({ block: "nearest", behavior: "smooth" });
+            }
+          });
+        },
+        zoom(id) {
+          if (!id) {
+            return;
+          }
+          App.selectRow(id);
+          const mapTrigger = document.querySelector(
+            '[data-bs-target="#mapView"]',
+          );
+          bootstrap.Tab.getOrCreateInstance(mapTrigger).show();
+          const marker = markerIndex.get(id);
+          if (marker) {
+            map.setView(marker.getLatLng(), 16);
+            marker.openPopup();
+          }
+        },
+      };
+      function bindEvents() {
+        $("filters").addEventListener("submit", (event) => {
+          event.preventDefault();
+          App.search();
+        });
+        ["postal", "dStart", "dEnd", "sMin", "sMax", "limit"].forEach((id) => {
+          $(id).addEventListener("input", updateFilterSummary);
+          $(id).addEventListener("change", updateFilterSummary);
+        });
+        $("resetBtn").addEventListener("click", () => {
+          setDefaultFilters();
+          setFiltersCollapsed(false);
+          resetResults();
+          updateFilterSummary();
+          setState(
+            "info",
+            "Filtres réinitialisés",
+            "Les filtres ont retrouvé leurs valeurs par défaut. Vous pouvez lancer une nouvelle recherche.",
+            "arrow-counterclockwise",
+          );
+        });
+        $("editFiltersBtn").addEventListener("click", () => {
+          setFiltersCollapsed(false, { focusFilters: true });
+        });
+        $("compactResetBtn").addEventListener("click", () => {
+          $("resetBtn").click();
+        });
+        $("shareEmail").addEventListener("click", shareByEmail);
+        $("shareX").addEventListener("click", shareOnX);
+        $("shareWhatsApp").addEventListener("click", shareOnWhatsApp);
+        $("shareCopy").addEventListener("click", copyShareText);
+        document
+          .querySelectorAll(
+            '[data-bs-target="#mapView"], [data-bs-target="#listView"]',
+          )
+          .forEach((button) => {
+            button.addEventListener("shown.bs.tab", (event) => {
+              document
+                .querySelectorAll(".view-switch .btn")
+                .forEach((tabButton) => {
+                  tabButton.classList.toggle(
+                    "active",
+                    tabButton === event.target,
+                  );
+                });
+              if (event.target.dataset.bsTarget === "#mapView") {
+                setTimeout(() => map.invalidateSize(), 120);
+              }
+            });
+          });
+      }
+      function init() {
+        buildOptionToggle(
+          "typeContainer",
+          TYPE_OPTIONS,
+          "type-",
+          "type-filter",
+          () => "btn-outline-primary",
+        );
+        buildOptionToggle(
+          "grades",
+          GRADE_OPTIONS,
+          "grade-",
+          "grade-filter",
+          (grade) => ({
+            className: "grade-pill",
+            style: `--grade-color:${COLORS[grade] || COLORS.Def};--grade-text:${BADGE_TEXT[grade] || BADGE_TEXT.Def};`,
+          }),
+        );
+        enhanceFieldLabels();
+        setDefaultFilters();
+        initTheme();
+        initMap();
+        initColumnToggles();
+        renderTableHead();
+        bindEvents();
+        applySurfaceGuidance();
+        updateFilterSummary();
+        tryAutofillPostalCode();
+      }
+      document.addEventListener("DOMContentLoaded", init);
+    </script>
+  </body>
 </html>
