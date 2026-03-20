@@ -113,6 +113,9 @@
         max-width: 1280px;
         margin: 0 auto;
         padding: 24px 16px 40px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
       }
       .panel {
         background: var(--surface);
@@ -367,8 +370,10 @@
         color: var(--danger);
       }
       .table-wrap {
+        position: relative;
         max-height: 560px;
         overflow: auto;
+        contain: paint;
         border: 1px solid var(--border);
         border-radius: 16px;
         background: var(--surface);
@@ -715,8 +720,11 @@
         color: var(--danger);
       }
       .site-footer {
-        margin-top: 1.25rem;
+        margin-top: auto;
         padding: 1.1rem 1.2rem;
+      }
+      .tab-content {
+        margin-bottom: 1.25rem;
       }
       .site-footer p {
         margin: 0;
