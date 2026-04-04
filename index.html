@@ -1743,30 +1743,37 @@
         }
         return window.location.href;
       }
+      function formatShareLine(item) {
+        const address = item.adresse_ban || "Adresse inconnue";
+        const type = formatBuildingType(item.type_batiment);
+        const dpe = item.etiquette_dpe || "-";
+        const ges = item.etiquette_ges || "-";
+        const surface = formatSurface(getSurfaceValue(item));
+        const date = item.date_etablissement_dpe
+          ? formatDate(item.date_etablissement_dpe)
+          : "-";
+        const link = geolocationLink(item);
+        return `${address} | ${type} | DPE ${dpe} | GES ${ges} | ${surface} | ${date}${link ? ` | Carte : ${link}` : ""}`;
+      }
       function buildShareSummary() {
         const filters = getFilterState();
-        const sample = appData.slice(0, 5).map((item) => {
-          const address = item.adresse_ban || "Adresse inconnue";
-          const type = formatBuildingType(item.type_batiment);
-          const dpe = item.etiquette_dpe || "-";
-          const ges = item.etiquette_ges || "-";
-          const surface = formatSurface(getSurfaceValue(item));
-          const date = item.date_etablissement_dpe
-            ? formatDate(item.date_etablissement_dpe)
-            : "-";
-          const link = geolocationLink(item);
-          return `${address} | ${type} | DPE ${dpe} | GES ${ges} | ${surface} | ${date}${link ? ` | Carte : ${link}` : ""}`;
-        });
+        const SHARE_MAX = 10;
+        const allLines = appData.map(formatShareLine);
+        const shownLines = allLines.slice(0, SHARE_MAX);
+        const remaining = allLines.length - shownLines.length;
         const intro = `${lastStats.total} ${pluralize(lastStats.total, "résultat", "résultats")} DPE pour ${filters.postalCodes.length ? filters.postalCodes.join(", ") : "la zone sélectionnée"}`;
         const filterLine = `Filtres : types ${summarizeSelection(filters.types, TYPE_OPTIONS, "tous")}, DPE ${summarizeSelection(filters.grades, GRADE_OPTIONS, "toutes")}, période ${filters.dateStart ? formatDate(filters.dateStart) : "?"} -> ${filters.dateEnd ? formatDate(filters.dateEnd) : "?"}, surface ${filters.surfaceMin || "0"} - ${filters.surfaceMax || "inf"} m2.`;
         const statsLine = `${lastStats.geocoded} géolocalisés, ${lastStats.ungeocoded} sans géopoint. Source : ADEME.`;
         const previewLines = [intro, filterLine, statsLine];
-        if (sample.length) {
+        if (shownLines.length) {
           previewLines.push(
             "",
-            "Principaux résultats :",
-            ...sample.map((line) => `- ${line}`),
+            `${allLines.length === 1 ? "Résultat" : "Résultats"} :`,
+            ...shownLines.map((line) => `- ${line}`),
           );
+          if (remaining > 0) {
+            previewLines.push(`… et ${remaining} ${pluralize(remaining, "autre résultat", "autres résultats")}.`);
+          }
         }
         const preview = previewLines.filter(Boolean).join("\n");
         const firstSharedLink =
@@ -1777,7 +1784,7 @@
           subject: `Observatoire DPE - ${intro}`,
           preview,
           emailBody: `Bonjour,\n\n${preview}${url ? `\n\nLien : ${url}` : ""}\n`,
-          socialText: `${short}${sample[0] ? ` Exemple : ${sample[0]}.` : ""}${url ? ` ${url}` : ""}`,
+          socialText: `${short}${allLines[0] ? ` Exemple : ${allLines[0]}.` : ""}${url ? ` ${url}` : ""}`,
           hasData: hasSearched && !lastError && lastStats.total > 0,
         };
       }
