@@ -21,6 +21,7 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
     />
     <style>
+      /* === THÈME & VARIABLES === */
       :root {
         color-scheme: light;
         --bg: #eef3fb;
@@ -79,6 +80,7 @@
         --popup-bg: #101a2b;
         --popup-text: #eef4ff;
       }
+      /* === BASE & LAYOUT === */
       * {
         box-sizing: border-box;
       }
@@ -123,6 +125,7 @@
         border-radius: 20px;
         box-shadow: var(--shadow-soft);
       }
+      /* === EN-TÊTE === */
       .app-header,
       .toolbar,
       .section-head,
@@ -211,6 +214,7 @@
         color: var(--text);
         box-shadow: var(--shadow-soft);
       }
+      /* === FILTRES === */
       .filter-panel,
       .content-panel {
         padding: 1.1rem;
@@ -322,6 +326,7 @@
         font-size: 0.86rem;
         font-weight: 500;
       }
+      /* === BARRE D'OUTILS & ÉTAT === */
       .toolbar {
         padding: 1rem 1.1rem;
         margin-bottom: 1rem;
@@ -369,6 +374,7 @@
         background: color-mix(in srgb, var(--danger) 18%, transparent);
         color: var(--danger);
       }
+      /* === TABLEAU === */
       .table-wrap {
         position: relative;
         max-height: 560px;
@@ -427,6 +433,7 @@
       .sort-icon {
         color: var(--muted);
       }
+      /* === CARTE === */
       #map {
         height: 560px;
         border-radius: 18px;
@@ -527,6 +534,7 @@
         align-items: center;
         gap: 0.65rem;
       }
+      /* === RESPONSIVE === */
       @media (max-width: 991.98px) {
         .filter-groups {
           grid-template-columns: 1fr;
@@ -561,6 +569,7 @@
           height: 460px;
         }
       }
+      /* === ÉTAT COMPACT (post-recherche) === */
       /* Compact state after search: keep the active filters visible without taking back vertical space. */
       .filter-panel {
         padding: 0.95rem;
@@ -692,6 +701,7 @@
         gap: 0.2rem;
         white-space: nowrap;
       }
+      /* === PARTAGE === */
       .share-card {
         margin-top: 0.85rem;
         padding: 0.95rem 1rem;
@@ -719,6 +729,7 @@
       .helper.is-error {
         color: var(--danger);
       }
+      /* === PIED DE PAGE === */
       .site-footer {
         margin-top: auto;
         padding: 1.1rem 1.2rem;
@@ -751,6 +762,7 @@
       .footer-links a:hover {
         text-decoration: underline;
       }
+      /* === BADGES DPE === */
       .grade-badge {
         width: 30px;
         height: 30px;
@@ -1300,25 +1312,26 @@
       const GRADE_OPTIONS = ["A", "B", "C", "D", "E", "F", "G"];
       const DEFAULT_TYPE_SELECTION = ["Appartement", "Maison"];
       const DEFAULT_GRADE_SELECTION = ["A", "B", "C"];
-      const COLORS = {
-        A: "#319834",
-        B: "#33cc31",
-        C: "#cbfc34",
-        D: "#fbfe06",
-        E: "#fbcc04",
-        F: "#f68e1e",
-        G: "#ef1d26",
-        Def: "#94a3b8",
+      const CONFIG = {
+        MAP_CENTER: [46.6, 1.9],
+        MAP_ZOOM_DEFAULT: 6,
+        MAP_ZOOM_FOCUS: 16,
+        MAP_INVALIDATE_DELAY: 120,
+        MARKER_SIZE: 34,
+        BOUNDS_PADDING: [24, 24],
+        GEO_TIMEOUT: 8000,
+        GEO_MAX_AGE: 300000,
+        SCROLL_DELAY: 80,
       };
-      const BADGE_TEXT = {
-        A: "#ffffff",
-        B: "#09280d",
-        C: "#1f2937",
-        D: "#1f2937",
-        E: "#1f2937",
-        F: "#111827",
-        G: "#ffffff",
-        Def: "#0f172a",
+      const GRADE_STYLES = {
+        A:   { color: "#319834", text: "#ffffff" },
+        B:   { color: "#33cc31", text: "#09280d" },
+        C:   { color: "#cbfc34", text: "#1f2937" },
+        D:   { color: "#fbfe06", text: "#1f2937" },
+        E:   { color: "#fbcc04", text: "#1f2937" },
+        F:   { color: "#f68e1e", text: "#111827" },
+        G:   { color: "#ef1d26", text: "#ffffff" },
+        Def: { color: "#94a3b8", text: "#0f172a" },
       };
       // Centralize visible columns, cell renderers and tooltip labels in one place.
       const FIELDS = [
@@ -1479,59 +1492,60 @@
           ? allLabel
           : values.join(", ");
       }
-      function textLabel(field) {
-        return field.k === "numero_dpe" ? "N° DPE" : field.l;
-      }
       function tooltipLabel(label, title, srText) {
         return `<span class="th-label">${label} <button type="button" class="info-trigger" data-bs-toggle="tooltip" data-bs-placement="top" title="${title}"><i class="bi bi-info-circle" aria-hidden="true"></i><span class="visually-hidden">${srText}</span></button></span>`;
       }
+      const FIELD_ENHANCEMENTS = {
+        annee_construction: {
+          l: "Année",
+          labelHtml: tooltipLabel(
+            "Année",
+            "Année de construction renseignée dans le DPE. Si elle est absente, la période de construction est affichée.",
+            "Explication de l’année de construction.",
+          ),
+        },
+        numero_dpe: {
+          l: "N° DPE",
+          labelHtml: tooltipLabel(
+            "N&deg; DPE",
+            "Identifiant unique du diagnostic dans la base ADEME. Le lien ouvre la fiche correspondante.",
+            "Explication du numéro DPE.",
+          ),
+        },
+        surface_habitable_logement: {
+          l: "Surface",
+          labelHtml: tooltipLabel(
+            "Surface",
+            "Surface habitable retenue par le DPE : celle du logement pour un appartement ou une maison, ou celle de l’immeuble si le type est Immeuble.",
+            "Explication de la surface habitable.",
+          ),
+        },
+        etiquette_dpe: {
+          labelHtml: tooltipLabel(
+            "DPE",
+            "Classe de performance énergétique du bien, de A à G, calculée à partir de la consommation énergétique.",
+            "Explication de la classe DPE.",
+          ),
+        },
+        etiquette_ges: {
+          labelHtml: tooltipLabel(
+            "GES",
+            "Classe d’émissions de gaz à effet de serre du bien, de A à G.",
+            "Explication de la classe GES.",
+          ),
+        },
+        date_etablissement_dpe: {
+          labelHtml: tooltipLabel(
+            "Date",
+            "Date d’établissement du DPE, c’est-à-dire la date à laquelle le diagnostic a été réalisé.",
+            "Explication de la date du DPE.",
+          ),
+        },
+      };
       function enhanceFieldLabels() {
         FIELDS.forEach((field) => {
-          if (field.k === "annee_construction") {
-            field.l = "Année";
-            field.labelHtml = tooltipLabel(
-              "Année",
-              "Année de construction renseignée dans le DPE. Si elle est absente, la période de construction est affichée.",
-              "Explication de l’année de construction.",
-            );
-          }
-          if (field.k === "numero_dpe") {
-            field.l = "N° DPE";
-            field.labelHtml = tooltipLabel(
-              "N&deg; DPE",
-              "Identifiant unique du diagnostic dans la base ADEME. Le lien ouvre la fiche correspondante.",
-              "Explication du numéro DPE.",
-            );
-          }
-          if (field.k === "surface_habitable_logement") {
-            field.l = "Surface";
-            field.labelHtml = tooltipLabel(
-              "Surface",
-              "Surface habitable retenue par le DPE : celle du logement pour un appartement ou une maison, ou celle de l’immeuble si le type est Immeuble.",
-              "Explication de la surface habitable.",
-            );
-          }
-          if (field.k === "etiquette_dpe") {
-            field.labelHtml = tooltipLabel(
-              "DPE",
-              "Classe de performance énergétique du bien, de A à G, calculée à partir de la consommation énergétique.",
-              "Explication de la classe DPE.",
-            );
-          }
-          if (field.k === "etiquette_ges") {
-            field.labelHtml = tooltipLabel(
-              "GES",
-              "Classe d’émissions de gaz à effet de serre du bien, de A à G.",
-              "Explication de la classe GES.",
-            );
-          }
-          if (field.k === "date_etablissement_dpe") {
-            field.labelHtml = tooltipLabel(
-              "Date",
-              "Date d’établissement du DPE, c’est-à-dire la date à laquelle le diagnostic a été réalisé.",
-              "Explication de la date du DPE.",
-            );
-          }
+          const enhancements = FIELD_ENHANCEMENTS[field.k];
+          if (enhancements) Object.assign(field, enhancements);
         });
       }
       function setPostalHelp(message, isError = false) {
@@ -1573,8 +1587,8 @@
           new Promise((resolve, reject) =>
             navigator.geolocation.getCurrentPosition(resolve, reject, {
               enableHighAccuracy: false,
-              timeout: 8000,
-              maximumAge: 300000,
+              timeout: CONFIG.GEO_TIMEOUT,
+              maximumAge: CONFIG.GEO_MAX_AGE,
             }),
           );
         try {
@@ -1608,11 +1622,8 @@
           input.checked = allowed.has(input.value);
         });
       }
-      function selectedTypes(filters) {
-        return filters.types.length ? filters.types : TYPE_OPTIONS;
-      }
       function surfaceMode(filters) {
-        const types = selectedTypes(filters);
+        const types = filters.types.length ? filters.types : TYPE_OPTIONS;
         const hasImmeuble = types.includes("Immeuble");
         const hasLogement = types.some(
           (type) => type === "Appartement" || type === "Maison",
@@ -1732,30 +1743,37 @@
         }
         return window.location.href;
       }
+      function formatShareLine(item) {
+        const address = item.adresse_ban || "Adresse inconnue";
+        const type = formatBuildingType(item.type_batiment);
+        const dpe = item.etiquette_dpe || "-";
+        const ges = item.etiquette_ges || "-";
+        const surface = formatSurface(getSurfaceValue(item));
+        const date = item.date_etablissement_dpe
+          ? formatDate(item.date_etablissement_dpe)
+          : "-";
+        const link = geolocationLink(item);
+        return `${address} | ${type} | DPE ${dpe} | GES ${ges} | ${surface} | ${date}${link ? ` | Carte : ${link}` : ""}`;
+      }
       function buildShareSummary() {
         const filters = getFilterState();
-        const sample = appData.slice(0, 5).map((item) => {
-          const address = item.adresse_ban || "Adresse inconnue";
-          const type = formatBuildingType(item.type_batiment);
-          const dpe = item.etiquette_dpe || "-";
-          const ges = item.etiquette_ges || "-";
-          const surface = formatSurface(getSurfaceValue(item));
-          const date = item.date_etablissement_dpe
-            ? formatDate(item.date_etablissement_dpe)
-            : "-";
-          const link = geolocationLink(item);
-          return `${address} | ${type} | DPE ${dpe} | GES ${ges} | ${surface} | ${date}${link ? ` | Carte : ${link}` : ""}`;
-        });
+        const SHARE_MAX = 10;
+        const allLines = appData.map(formatShareLine);
+        const shownLines = allLines.slice(0, SHARE_MAX);
+        const remaining = allLines.length - shownLines.length;
         const intro = `${lastStats.total} ${pluralize(lastStats.total, "résultat", "résultats")} DPE pour ${filters.postalCodes.length ? filters.postalCodes.join(", ") : "la zone sélectionnée"}`;
         const filterLine = `Filtres : types ${summarizeSelection(filters.types, TYPE_OPTIONS, "tous")}, DPE ${summarizeSelection(filters.grades, GRADE_OPTIONS, "toutes")}, période ${filters.dateStart ? formatDate(filters.dateStart) : "?"} -> ${filters.dateEnd ? formatDate(filters.dateEnd) : "?"}, surface ${filters.surfaceMin || "0"} - ${filters.surfaceMax || "inf"} m2.`;
         const statsLine = `${lastStats.geocoded} géolocalisés, ${lastStats.ungeocoded} sans géopoint. Source : ADEME.`;
         const previewLines = [intro, filterLine, statsLine];
-        if (sample.length) {
+        if (shownLines.length) {
           previewLines.push(
             "",
-            "Principaux résultats :",
-            ...sample.map((line) => `- ${line}`),
+            `${allLines.length === 1 ? "Résultat" : "Résultats"} :`,
+            ...shownLines.map((line) => `- ${line}`),
           );
+          if (remaining > 0) {
+            previewLines.push(`… et ${remaining} ${pluralize(remaining, "autre résultat", "autres résultats")}.`);
+          }
         }
         const preview = previewLines.filter(Boolean).join("\n");
         const firstSharedLink =
@@ -1766,7 +1784,7 @@
           subject: `Observatoire DPE - ${intro}`,
           preview,
           emailBody: `Bonjour,\n\n${preview}${url ? `\n\nLien : ${url}` : ""}\n`,
-          socialText: `${short}${sample[0] ? ` Exemple : ${sample[0]}.` : ""}${url ? ` ${url}` : ""}`,
+          socialText: `${short}${allLines[0] ? ` Exemple : ${allLines[0]}.` : ""}${url ? ` ${url}` : ""}`,
           hasData: hasSearched && !lastError && lastStats.total > 0,
         };
       }
@@ -1836,8 +1854,7 @@
       }
       function renderBadge(type, value, size = 30, iconName = "building") {
         const grade = value || "-";
-        const color = COLORS[grade] || COLORS.Def;
-        const textColor = BADGE_TEXT[grade] || BADGE_TEXT.Def;
+        const { color, text: textColor } = GRADE_STYLES[grade] ?? GRADE_STYLES.Def;
         if (type === "badge") {
           return `<span class="grade-badge" aria-label="Classe ${escapeHtml(grade)}" style="background:${color};color:${textColor};min-width:${size}px;min-height:${size}px"><span class="visually-hidden">Classe </span>${escapeHtml(grade)}</span>`;
         }
@@ -1958,7 +1975,7 @@
         map = L.map("map", {
           fullscreenControl: true,
           zoomControl: true,
-        }).setView([46.6, 1.9], 6);
+        }).setView(CONFIG.MAP_CENTER, CONFIG.MAP_ZOOM_DEFAULT);
         lightTileLayer = L.tileLayer(
           "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
           { attribution: "&copy; OpenStreetMap contributors" },
@@ -2148,34 +2165,29 @@
             "Le tri, les colonnes visibles et la sélection active seront disponibles après la première recherche.";
           $("mapMeta").textContent =
             "La carte affichera ensuite les logements géolocalisés correspondant à vos filtres.";
-          refreshShareSummary();
-          return;
-        }
-        resultsBar.classList.remove("d-none");
-        if (lastError) {
+        } else if (lastError) {
+          resultsBar.classList.remove("d-none");
           $("resultsMeta").textContent = "Recherche en erreur.";
           $("tableMeta").textContent =
             "Aucun résultat fiable à afficher tant que la requête n’a pas abouti.";
           $("mapMeta").textContent =
             "La carte attend une réponse valide de l’API avant d’afficher des marqueurs.";
-          refreshShareSummary();
-          return;
-        }
-        if (!lastStats.total) {
+        } else if (!lastStats.total) {
+          resultsBar.classList.remove("d-none");
           $("resultsMeta").textContent = "Aucun résultat pour ces critères.";
           $("tableMeta").textContent =
             "Le tableau reste vide, car aucun DPE ne correspond à cette combinaison de filtres.";
           $("mapMeta").textContent =
             "La carte n’a aucun logement à afficher pour cette recherche.";
-          refreshShareSummary();
-          return;
+        } else {
+          resultsBar.classList.remove("d-none");
+          $("resultsMeta").textContent =
+            `${lastStats.geocoded} géolocalisés, ${lastStats.ungeocoded} sans géopoint.`;
+          $("tableMeta").textContent =
+            "Cliquez sur un en-tête pour trier, puis utilisez l’icône de localisation pour centrer un logement sur la carte.";
+          $("mapMeta").textContent =
+            "Les marqueurs sont colorés selon la classe DPE. Les logements sans géopoint restent consultables dans la liste.";
         }
-        $("resultsMeta").textContent =
-          `${lastStats.geocoded} géolocalisés, ${lastStats.ungeocoded} sans géopoint.`;
-        $("tableMeta").textContent =
-          "Cliquez sur un en-tête pour trier, puis utilisez l’icône de localisation pour centrer un logement sur la carte.";
-        $("mapMeta").textContent =
-          "Les marqueurs sont colorés selon la classe DPE. Les logements sans géopoint restent consultables dans la liste.";
         refreshShareSummary();
       }
       function setState(kind, title, copy, icon) {
@@ -2315,11 +2327,11 @@
               html: renderBadge(
                 "pin",
                 item.etiquette_dpe,
-                34,
+                CONFIG.MARKER_SIZE,
                 markerIconName(item.type_batiment),
               ),
               className: "",
-              iconSize: [34, 34],
+              iconSize: [CONFIG.MARKER_SIZE, CONFIG.MARKER_SIZE],
             }),
           }).bindPopup(popupContent(item));
           marker.did = item.numero_dpe || "";
@@ -2330,9 +2342,9 @@
           geocoded += 1;
         });
         if (bounds.length) {
-          map.fitBounds(bounds, { padding: [24, 24] });
+          map.fitBounds(bounds, { padding: CONFIG.BOUNDS_PADDING });
         } else {
-          map.setView([46.6, 1.9], 6);
+          map.setView(CONFIG.MAP_CENTER, CONFIG.MAP_ZOOM_DEFAULT);
         }
         return geocoded;
       }
@@ -2414,7 +2426,7 @@
                 "check-circle",
               );
             }
-            setTimeout(scrollToResults, 80);
+            setTimeout(scrollToResults, CONFIG.SCROLL_DELAY);
           } catch (error) {
             console.error(error);
             lastError = error;
@@ -2466,12 +2478,12 @@
           bootstrap.Tab.getOrCreateInstance(mapTrigger).show();
           const marker = markerIndex.get(id);
           if (marker) {
-            map.setView(marker.getLatLng(), 16);
+            map.setView(marker.getLatLng(), CONFIG.MAP_ZOOM_FOCUS);
             marker.openPopup();
           }
         },
       };
-      function bindEvents() {
+      function bindSearchEvents() {
         $("filters").addEventListener("submit", (event) => {
           event.preventDefault();
           App.search();
@@ -2498,10 +2510,14 @@
         $("compactResetBtn").addEventListener("click", () => {
           $("resetBtn").click();
         });
+      }
+      function bindShareEvents() {
         $("shareEmail").addEventListener("click", shareByEmail);
         $("shareX").addEventListener("click", shareOnX);
         $("shareWhatsApp").addEventListener("click", shareOnWhatsApp);
         $("shareCopy").addEventListener("click", copyShareText);
+      }
+      function bindUIEvents() {
         document
           .querySelectorAll(
             '[data-bs-target="#mapView"], [data-bs-target="#listView"]',
@@ -2517,10 +2533,15 @@
                   );
                 });
               if (event.target.dataset.bsTarget === "#mapView") {
-                setTimeout(() => map.invalidateSize(), 120);
+                setTimeout(() => map.invalidateSize(), CONFIG.MAP_INVALIDATE_DELAY);
               }
             });
           });
+      }
+      function bindEvents() {
+        bindSearchEvents();
+        bindShareEvents();
+        bindUIEvents();
       }
       function init() {
         buildOptionToggle(
@@ -2537,7 +2558,7 @@
           "grade-filter",
           (grade) => ({
             className: "grade-pill",
-            style: `--grade-color:${COLORS[grade] || COLORS.Def};--grade-text:${BADGE_TEXT[grade] || BADGE_TEXT.Def};`,
+            style: `--grade-color:${(GRADE_STYLES[grade] ?? GRADE_STYLES.Def).color};--grade-text:${(GRADE_STYLES[grade] ?? GRADE_STYLES.Def).text};`,
           }),
         );
         enhanceFieldLabels();
