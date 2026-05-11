@@ -2398,9 +2398,28 @@
           searchButton.innerHTML =
             '<span class="spinner-wrap"><span class="spinner-border spinner-border-sm" aria-hidden="true"></span>Recherche...</span>';
           try {
-            const response = await fetch(`${API}?${buildParams(filters)}`);
+            // Retry avec backoff exponentiel : gère les 429 (surcharge Elasticsearch ADEME)
+            let response;
+            const MAX_RETRIES = 3;
+            for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+              if (attempt > 0) {
+                const delay = Math.pow(2, attempt) * 1000; // 2s, 4s
+                setState(
+                  "info",
+                  `Tentative ${attempt + 1}/${MAX_RETRIES}`,
+                  `L’API ADEME est surchargée. Nouvelle tentative dans ${delay / 1000}s…`,
+                  "arrow-clockwise",
+                );
+                await new Promise((r) => setTimeout(r, delay));
+              }
+              response = await fetch(`${API}?${buildParams(filters)}`);
+              if (response.status !== 429) break;
+            }
             if (!response.ok) {
-              throw new Error(response.statusText || "API error");
+              if (response.status === 429) {
+                throw Object.assign(new Error("rate_limited"), { status: 429 });
+              }
+              throw Object.assign(new Error(response.statusText || "API error"), { status: response.status });
             }
             const payload = await response.json();
             appData = filterResults(
@@ -2432,10 +2451,16 @@
             lastError = error;
             resetResults(true);
             setFiltersCollapsed(false);
+            const isRateLimit = error.status === 429;
+            const isNetwork = error instanceof TypeError && !error.status;
             setState(
               "error",
-              "Erreur API",
-              "La requête n’a pas abouti. Vérifiez votre connexion ou réessayez avec une recherche plus simple.",
+              isRateLimit ? "API ADEME surchargée" : isNetwork ? "Erreur réseau" : "Erreur API",
+              isRateLimit
+                ? "Le serveur ADEME est momentanément saturé (trop de requêtes simultanées). Attendez quelques secondes avant de relancer."
+                : isNetwork
+                ? "La connexion avec l’API ADEME a été interrompue. Vérifiez votre connexion internet ou réessayez dans un instant."
+                : "La requête n'a pas abouti (statut " + (error.status || "inconnu") + "). Réessayez avec des filtres plus simples.",
               "exclamation-triangle",
             );
           } finally {
