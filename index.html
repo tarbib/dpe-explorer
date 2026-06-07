@@ -1699,20 +1699,9 @@
         }
         return true;
       }
-      // Le champ date_etablissement_dpe est un string ISO (YYYY-MM-DD) dans Elasticsearch.
-      // La comparaison lexicographique est correcte pour ce format.
-      function matchesDateFilter(item, filters) {
-        if (!filters.dateStart && !filters.dateEnd) return true;
-        const date = item.date_etablissement_dpe;
-        if (!date) return false;
-        if (filters.dateStart && date < filters.dateStart) return false;
-        if (filters.dateEnd && date > filters.dateEnd) return false;
-        return true;
-      }
       function filterResults(results, filters, limit) {
         return results
           .filter((item) => matchesSurfaceFilter(item, filters))
-          .filter((item) => matchesDateFilter(item, filters))
           .slice(0, limit);
       }
       function renderCompactFilters(filters = getFilterState()) {
@@ -2104,14 +2093,11 @@
         updateResultsToolbar();
       }
       function buildParams(filters = getFilterState()) {
-        // Le champ date_etablissement_dpe est typé "string" sans capacité de range dans
-        // le schéma Elasticsearch ADEME — les paramètres _gte/_lte sont ignorés côté serveur.
-        // Le filtrage par date est donc réalisé côté client dans filterResults().
-        // On sur-charge le fetchSize pour compenser la perte de densité après filtrage.
-        const hasClientFilter = filters.surfaceMin || filters.surfaceMax || filters.dateStart || filters.dateEnd;
-        const fetchSize = hasClientFilter
-          ? Math.min(Math.max(filters.limit * 5, filters.limit), 1000)
-          : filters.limit;
+        // Fetch extra rows when a surface range is active because that filter is refined client-side.
+        const fetchSize =
+          filters.surfaceMin || filters.surfaceMax
+            ? Math.min(Math.max(filters.limit * 3, filters.limit), 1000)
+            : filters.limit;
         const params = {
           size: fetchSize,
           select:
@@ -2132,6 +2118,14 @@
         if (queryParts.length) {
           params.qs = queryParts.join(" AND ");
         }
+        [
+          ["date_etablissement_dpe_gte", "dateStart"],
+          ["date_etablissement_dpe_lte", "dateEnd"],
+        ].forEach(([paramName, key]) => {
+          if (filters[key]) {
+            params[paramName] = filters[key];
+          }
+        });
         return new URLSearchParams(params).toString();
       }
       function buildResultsSummary(filters) {
@@ -2404,28 +2398,9 @@
           searchButton.innerHTML =
             '<span class="spinner-wrap"><span class="spinner-border spinner-border-sm" aria-hidden="true"></span>Recherche...</span>';
           try {
-            // Retry avec backoff exponentiel : gère les 429 (surcharge Elasticsearch ADEME)
-            let response;
-            const MAX_RETRIES = 3;
-            for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-              if (attempt > 0) {
-                const delay = Math.pow(2, attempt) * 1000; // 2s, 4s
-                setState(
-                  "info",
-                  `Tentative ${attempt + 1}/${MAX_RETRIES}`,
-                  `L’API ADEME est surchargée. Nouvelle tentative dans ${delay / 1000}s…`,
-                  "arrow-clockwise",
-                );
-                await new Promise((r) => setTimeout(r, delay));
-              }
-              response = await fetch(`${API}?${buildParams(filters)}`);
-              if (response.status !== 429) break;
-            }
+            const response = await fetch(`${API}?${buildParams(filters)}`);
             if (!response.ok) {
-              if (response.status === 429) {
-                throw Object.assign(new Error("rate_limited"), { status: 429 });
-              }
-              throw Object.assign(new Error(response.statusText || "API error"), { status: response.status });
+              throw new Error(response.statusText || "API error");
             }
             const payload = await response.json();
             appData = filterResults(
@@ -2457,16 +2432,10 @@
             lastError = error;
             resetResults(true);
             setFiltersCollapsed(false);
-            const isRateLimit = error.status === 429;
-            const isNetwork = error instanceof TypeError && !error.status;
             setState(
               "error",
-              isRateLimit ? "API ADEME surchargée" : isNetwork ? "Erreur réseau" : "Erreur API",
-              isRateLimit
-                ? "Le serveur ADEME est momentanément saturé (trop de requêtes simultanées). Attendez quelques secondes avant de relancer."
-                : isNetwork
-                ? "La connexion avec l’API ADEME a été interrompue. Vérifiez votre connexion internet ou réessayez dans un instant."
-                : "La requête n'a pas abouti (statut " + (error.status || "inconnu") + "). Réessayez avec des filtres plus simples.",
+              "Erreur API",
+              "La requête n’a pas abouti. Vérifiez votre connexion ou réessayez avec une recherche plus simple.",
               "exclamation-triangle",
             );
           } finally {
