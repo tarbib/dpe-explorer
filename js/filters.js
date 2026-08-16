@@ -244,7 +244,7 @@ function getFilterState() {
   return {
     postalCodes: $("postal")
       .value.split(/[\s,]+/)
-      .filter(Boolean),
+      .filter((code) => /^\d{5}$/.test(code)),
     types: [...document.querySelectorAll(".type-filter:checked")].map(
       (input) => input.value,
     ),

@@ -1,6 +1,9 @@
 function $(id) {
   return document.getElementById(id);
 }
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, "&amp;")

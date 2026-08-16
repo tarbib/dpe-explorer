@@ -1,3 +1,36 @@
+async function fetchWithRetry(
+  url,
+  { retries = CONFIG.FETCH_RETRIES, baseDelayMs = CONFIG.FETCH_RETRY_BASE_DELAY } = {},
+) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    let response;
+    try {
+      response = await fetch(url);
+    } catch (networkError) {
+      if (attempt === retries) {
+        throw networkError;
+      }
+      await sleep(baseDelayMs * attempt);
+      continue;
+    }
+    if (response.status === 429 && attempt < retries) {
+      setState(
+        "info",
+        "Nouvelle tentative",
+        `Le service ADEME est temporairement saturé, tentative ${attempt + 1}/${retries}…`,
+        "hourglass-split",
+      );
+      await sleep(baseDelayMs * attempt);
+      continue;
+    }
+    if (!response.ok) {
+      throw Object.assign(new Error(response.statusText || "API error"), {
+        status: response.status,
+      });
+    }
+    return response;
+  }
+}
 const App = {
   async search() {
     const searchButton = $("searchBtn");
@@ -27,10 +60,7 @@ const App = {
     searchButton.innerHTML =
       '<span class="spinner-wrap"><span class="spinner-border spinner-border-sm" aria-hidden="true"></span>Recherche...</span>';
     try {
-      const response = await fetch(`${API}?${buildParams(filters)}`);
-      if (!response.ok) {
-        throw new Error(response.statusText || "API error");
-      }
+      const response = await fetchWithRetry(`${API}?${buildParams(filters)}`);
       const payload = await response.json();
       appData = filterResults(
         payload.results || [],
@@ -61,10 +91,16 @@ const App = {
       lastError = error;
       resetResults(true);
       setFiltersCollapsed(false);
+      const isRateLimited = error.status === 429;
+      const isNetworkError = error instanceof TypeError;
       setState(
         "error",
         "Erreur API",
-        "La requête n’a pas abouti. Vérifiez votre connexion ou réessayez avec une recherche plus simple.",
+        isRateLimited
+          ? "Le service ADEME est temporairement saturé (trop de requêtes). Réessayez dans quelques instants."
+          : isNetworkError
+            ? "Impossible de contacter l’API ADEME. Vérifiez votre connexion internet."
+            : "La requête n’a pas abouti. Vérifiez votre connexion ou réessayez avec une recherche plus simple.",
         "exclamation-triangle",
       );
     } finally {

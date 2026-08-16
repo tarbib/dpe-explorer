@@ -1,6 +1,7 @@
 function loadThemeMode() {
   try {
-    return localStorage.getItem(STORAGE_KEY) || "auto";
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return ["light", "dark", "auto"].includes(stored) ? stored : "auto";
   } catch (error) {
     return "auto";
   }

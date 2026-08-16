@@ -92,7 +92,7 @@ function renderRows() {
       const value = getFieldValue(field, item);
       return `<td class="${[field.cellClass || "", hiddenClass].join(" ").trim()}" style="${field.style || ""}">${field.html ? value : escapeHtml(value)}</td>`;
     }).join("");
-    row.innerHTML = `${cells}<td class="text-center"><button type="button" class="btn btn-sm btn-soft" data-zoom="${item.numero_dpe || ""}" aria-label="Voir la localisation sur la carte"><i class="bi bi-geo-alt" aria-hidden="true"></i></button></td>`;
+    row.innerHTML = `${cells}<td class="text-center"><button type="button" class="btn btn-sm btn-soft" data-zoom="${escapeHtml(item.numero_dpe || "")}" aria-label="Voir la localisation sur la carte"><i class="bi bi-geo-alt" aria-hidden="true"></i></button></td>`;
     tbody.appendChild(row);
   });
   tbody.querySelectorAll("[data-zoom]").forEach((button) => {

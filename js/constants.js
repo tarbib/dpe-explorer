@@ -17,6 +17,8 @@ const CONFIG = {
   GEO_TIMEOUT: 8000,
   GEO_MAX_AGE: 300000,
   SCROLL_DELAY: 80,
+  FETCH_RETRIES: 3,
+  FETCH_RETRY_BASE_DELAY: 2000,
 };
 const GRADE_STYLES = {
   A:   { color: "#319834", text: "#ffffff" },
