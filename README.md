@@ -14,15 +14,18 @@ L’objectif est de détecter rapidement les nouveaux DPE afin d’identifier de
 Un DPE récent peut indiquer un projet de mise en vente : cette interface permet de surveiller ces signaux, de prioriser la prospection et de gagner du temps sur la recherche manuelle.
 
 ## Structure du code
-- `index.html` : application complète en une seule page.
-  - HTML : structure des filtres, du tableau, de la carte et de la modale de partage.
-  - CSS (dans `<style>`) : design system local (tokens de couleur, composants, responsive).
-  - JS (dans `<script>`) : logique de filtrage, appels API, rendu du tableau et de la carte, partage et gestion du thème.
+- `index.html` : structure des filtres, du tableau, de la carte et de la modale de partage, plus les balises SEO (meta, Open Graph, JSON-LD).
+- `css/app.css` : design system local (tokens de couleur, composants, responsive).
+- `js/` : logique applicative, découpée par responsabilité et chargée via de simples balises `<script>` (pas de bundler, pas de modules ES, pour rester ouvrable en `file://`) :
+  - `utils.js`, `constants.js`, `state.js` : fonctions génériques, configuration/données statiques, état mutable partagé.
+  - `theme.js`, `filters.js`, `share.js`, `map.js`, `table.js`, `results.js` : une responsabilité par fichier (thème, filtres, partage, carte, tableau, rendu des résultats).
+  - `app.js` : orchestration (recherche, liaison des événements, initialisation).
+- `robots.txt`, `sitemap.xml` : indexation du site.
 - Dépendances chargées via CDN : Bootstrap, Bootstrap Icons, Leaflet, Leaflet Fullscreen.
 - Sources de données : API ADEME DPE logements + API Adresse (reverse geocoding).
 
 ## Choix de simplification
-- Pas de build, pas de backend, pas de framework : une page autonome, facile à ouvrir, partager et déployer.
+- Pas de build, pas de backend, pas de framework : des fichiers statiques autonomes, faciles à ouvrir (y compris directement en `file://`), partager et déployer.
 - Complexité réduite pour valider rapidement la valeur fonctionnelle (MVP).
 - Dépendances limitées au strict nécessaire et chargées à la demande.
 - Limitation des résultats et simplicité des filtres pour privilégier la lisibilité et la performance.

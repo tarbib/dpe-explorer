@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dpe.thomas-arbib.com/sitemap.xml
