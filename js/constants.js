@@ -7,6 +7,7 @@ const TYPE_OPTIONS = ["Appartement", "Maison", "Immeuble"];
 const GRADE_OPTIONS = ["A", "B", "C", "D", "E", "F", "G"];
 const DEFAULT_TYPE_SELECTION = ["Appartement", "Maison"];
 const DEFAULT_GRADE_SELECTION = ["A", "B", "C"];
+const DEFAULT_GES_SELECTION = GRADE_OPTIONS;
 const CONFIG = {
   MAP_CENTER: [46.6, 1.9],
   MAP_ZOOM_DEFAULT: 6,

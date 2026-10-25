@@ -26,7 +26,7 @@ function buildShareSummary() {
   const shownLines = allLines.slice(0, SHARE_MAX);
   const remaining = allLines.length - shownLines.length;
   const intro = `${lastStats.total} ${pluralize(lastStats.total, "résultat", "résultats")} DPE pour ${filters.postalCodes.length ? filters.postalCodes.join(", ") : "la zone sélectionnée"}`;
-  const filterLine = `Filtres : types ${summarizeSelection(filters.types, TYPE_OPTIONS, "tous")}, DPE ${summarizeSelection(filters.grades, GRADE_OPTIONS, "toutes")}, période ${filters.dateStart ? formatDate(filters.dateStart) : "?"} -> ${filters.dateEnd ? formatDate(filters.dateEnd) : "?"}, surface ${filters.surfaceMin || "0"} - ${filters.surfaceMax || "inf"} m2.`;
+  const filterLine = `Filtres : types ${summarizeSelection(filters.types, TYPE_OPTIONS, "tous")}, DPE ${summarizeSelection(filters.grades, GRADE_OPTIONS, "toutes")}, GES ${summarizeSelection(filters.gesGrades, GRADE_OPTIONS, "toutes")}, période ${filters.dateStart ? formatDate(filters.dateStart) : "?"} -> ${filters.dateEnd ? formatDate(filters.dateEnd) : "?"}, surface ${filters.surfaceMin || "0"} - ${filters.surfaceMax || "inf"} m2.`;
   const statsLine = `${lastStats.geocoded} géolocalisés, ${lastStats.ungeocoded} sans géopoint. Source : ADEME.`;
   const previewLines = [intro, filterLine, statsLine];
   if (shownLines.length) {

@@ -217,15 +217,23 @@ function init() {
     "type-filter",
     () => "btn-outline-primary",
   );
+  const gradePill = (grade) => ({
+    className: "grade-pill",
+    style: `--grade-color:${(GRADE_STYLES[grade] ?? GRADE_STYLES.Def).color};--grade-text:${(GRADE_STYLES[grade] ?? GRADE_STYLES.Def).text};`,
+  });
   buildOptionToggle(
     "grades",
     GRADE_OPTIONS,
     "grade-",
     "grade-filter",
-    (grade) => ({
-      className: "grade-pill",
-      style: `--grade-color:${(GRADE_STYLES[grade] ?? GRADE_STYLES.Def).color};--grade-text:${(GRADE_STYLES[grade] ?? GRADE_STYLES.Def).text};`,
-    }),
+    gradePill,
+  );
+  buildOptionToggle(
+    "gesGrades",
+    GRADE_OPTIONS,
+    "ges-",
+    "ges-filter",
+    gradePill,
   );
   enhanceFieldLabels();
   setDefaultFilters();

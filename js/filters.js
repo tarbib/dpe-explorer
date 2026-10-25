@@ -119,6 +119,9 @@ function validateFilters(filters = getFilterState()) {
   if (!filters.grades.length) {
     missing.push("au moins une classe DPE");
   }
+  if (!filters.gesGrades.length) {
+    missing.push("au moins une classe GES");
+  }
   if (!filters.dateStart && !filters.dateEnd) {
     missing.push("au moins une date");
   }
@@ -251,6 +254,9 @@ function getFilterState() {
     grades: [...document.querySelectorAll(".grade-filter:checked")].map(
       (input) => input.value,
     ),
+    gesGrades: [...document.querySelectorAll(".ges-filter:checked")].map(
+      (input) => input.value,
+    ),
     dateStart: $("dStart").value,
     dateEnd: $("dEnd").value,
     surfaceMin: $("sMin").value,
@@ -273,6 +279,10 @@ function buildFilterChips(filters) {
     {
       icon: "speedometer2",
       text: `DPE : ${summarizeSelection(filters.grades, GRADE_OPTIONS, "toutes")}`,
+    },
+    {
+      icon: "cloud",
+      text: `GES : ${summarizeSelection(filters.gesGrades, GRADE_OPTIONS, "toutes")}`,
     },
     {
       icon: "calendar3",
@@ -320,6 +330,10 @@ function buildParams(filters = getFilterState()) {
     filters.grades.length
       ? `(${filters.grades.map((grade) => `etiquette_dpe:${grade}`).join(" OR ")})`
       : null,
+    // All GES classes selected means no constraint, so DPE without a GES label stay included.
+    filters.gesGrades.length && filters.gesGrades.length < GRADE_OPTIONS.length
+      ? `(${filters.gesGrades.map((grade) => `etiquette_ges:${grade}`).join(" OR ")})`
+      : null,
   ].filter(Boolean);
   if (queryParts.length) {
     params.qs = queryParts.join(" AND ");
@@ -342,6 +356,7 @@ function setDefaultFilters() {
   setDefaultDates(90);
   setCheckboxSelection(".type-filter", DEFAULT_TYPE_SELECTION);
   setCheckboxSelection(".grade-filter", DEFAULT_GRADE_SELECTION);
+  setCheckboxSelection(".ges-filter", DEFAULT_GES_SELECTION);
   setPostalHelp(
     defaultPostalCode
       ? `Code postal détecté automatiquement : ${defaultPostalCode}.`

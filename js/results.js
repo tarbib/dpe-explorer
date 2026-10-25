@@ -9,6 +9,9 @@ function buildResultsSummary(filters) {
   parts.push(
     `DPE ${summarizeSelection(filters.grades, GRADE_OPTIONS, "toutes")}`,
   );
+  parts.push(
+    `GES ${summarizeSelection(filters.gesGrades, GRADE_OPTIONS, "toutes")}`,
+  );
   if (filters.dateStart || filters.dateEnd) {
     parts.push(
       `periode ${filters.dateStart ? formatDate(filters.dateStart) : "?"} -> ${filters.dateEnd ? formatDate(filters.dateEnd) : "?"}`,
