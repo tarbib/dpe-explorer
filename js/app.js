@@ -49,6 +49,7 @@ const App = {
     lastError = null;
     selectedRowId = null;
     lastStats = { total: 0, geocoded: 0, ungeocoded: 0 };
+    syncUrlWithFilters(filters);
     updateResultsToolbar();
     setState(
       "info",
@@ -160,6 +161,7 @@ function bindSearchEvents() {
   });
   $("resetBtn").addEventListener("click", () => {
     setDefaultFilters();
+    syncUrlWithFilters(null);
     setFiltersCollapsed(false);
     resetResults();
     updateFilterSummary();
@@ -181,7 +183,7 @@ function bindShareEvents() {
   $("shareEmail").addEventListener("click", shareByEmail);
   $("shareX").addEventListener("click", shareOnX);
   $("shareWhatsApp").addEventListener("click", shareOnWhatsApp);
-  $("shareCopy").addEventListener("click", copyShareText);
+  $("shareCopy").addEventListener("click", copyShareLink);
 }
 function bindUIEvents() {
   document
@@ -237,6 +239,7 @@ function init() {
   );
   enhanceFieldLabels();
   setDefaultFilters();
+  const hasUrlFilters = applyFiltersFromUrl();
   initTheme();
   initMap();
   initColumnToggles();
@@ -245,5 +248,9 @@ function init() {
   applySurfaceGuidance();
   updateFilterSummary();
   tryAutofillPostalCode();
+  // A shared link replays its search right away.
+  if (hasUrlFilters) {
+    App.search();
+  }
 }
 document.addEventListener("DOMContentLoaded", init);

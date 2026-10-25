@@ -348,6 +348,27 @@ function buildParams(filters = getFilterState()) {
   });
   return new URLSearchParams(params).toString();
 }
+// Mirrors the filters in a short, readable query string for shareable links.
+function filtersToQuery(filters) {
+  const params = new URLSearchParams();
+  [
+    ["cp", filters.postalCodes.join(",")],
+    ["types", filters.types.join(",")],
+    ["dpe", filters.grades.join(",")],
+    ["ges", filters.gesGrades.join(",")],
+    ["du", filters.dateStart],
+    ["au", filters.dateEnd],
+    ["smin", filters.surfaceMin],
+    ["smax", filters.surfaceMax],
+    ["limite", String(filters.limit)],
+  ].forEach(([key, value]) => {
+    if (value) {
+      params.set(key, value);
+    }
+  });
+  // URLSearchParams escapes commas; keep list separators readable.
+  return params.toString().replace(/%2C/g, ",");
+}
 function setDefaultFilters() {
   $("postal").value = defaultPostalCode;
   $("sMin").value = "";
@@ -362,4 +383,45 @@ function setDefaultFilters() {
       ? `Code postal détecté automatiquement : ${defaultPostalCode}.`
       : "Un ou plusieurs codes postaux, séparés par une virgule ou un espace.",
   );
+}
+// Restores the filters of a shared link on top of the defaults.
+// Returns true when the URL carries at least one filter.
+function applyFiltersFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const inputs = [
+    ["postal", "cp"],
+    ["dStart", "du"],
+    ["dEnd", "au"],
+    ["sMin", "smin"],
+    ["sMax", "smax"],
+    ["limit", "limite"],
+  ];
+  const toggles = [
+    [".type-filter", "types", TYPE_OPTIONS],
+    [".grade-filter", "dpe", GRADE_OPTIONS],
+    [".ges-filter", "ges", GRADE_OPTIONS],
+  ];
+  if (![...inputs, ...toggles].some(([, key]) => params.has(key))) {
+    return false;
+  }
+  // No date keeps the default period; a single date leaves the other bound open, as in the shared search.
+  if (params.has("du") || params.has("au")) {
+    $("dStart").value = "";
+    $("dEnd").value = "";
+  }
+  inputs.forEach(([id, key]) => {
+    if (params.has(key)) {
+      $(id).value = params.get(key);
+    }
+  });
+  toggles.forEach(([selector, key, options]) => {
+    const wanted = (params.get(key) || "").toLowerCase().split(/[\s,]+/);
+    const selected = options.filter((option) =>
+      wanted.includes(option.toLowerCase()),
+    );
+    if (selected.length) {
+      setCheckboxSelection(selector, selected);
+    }
+  });
+  return true;
 }

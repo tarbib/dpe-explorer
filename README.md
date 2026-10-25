@@ -5,7 +5,8 @@
 - Limitation du volume de résultats pour préserver la fluidité de l’interface.
 - Affichage des résultats sous forme de liste (tableau triable, colonnes personnalisables, liens vers la fiche ADEME).
 - Visualisation des résultats sur une carte interactive (Leaflet) avec des marqueurs par classe DPE.
-- Génération d’une synthèse partageable (email, X, WhatsApp, copie dans le presse-papiers).
+- Filtres repris dans l’URL à chaque recherche : un lien partagé ou mis en favori relance la même recherche.
+- Partage des résultats : synthèse par email, X ou WhatsApp (avec le lien de la recherche), ou copie du lien dans le presse-papiers.
 - Thème clair / sombre / automatique avec persistance locale.
 - Autoremplissage optionnel du code postal via la géolocalisation.
 

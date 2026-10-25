@@ -7,6 +7,16 @@ function activeShareUrl() {
   }
   return window.location.href;
 }
+// Keeps the address bar on the last launched search so its URL reopens it; null clears it.
+function syncUrlWithFilters(filters) {
+  const url = new URL(window.location.href);
+  url.search = filters ? filtersToQuery(filters) : "";
+  try {
+    history.replaceState(null, "", url.href);
+  } catch (error) {
+    console.warn("Impossible de mettre à jour l’URL.", error);
+  }
+}
 function formatShareLine(item) {
   const address = item.adresse_ban || "Adresse inconnue";
   const type = formatBuildingType(item.type_batiment);
@@ -94,25 +104,32 @@ function shareOnWhatsApp() {
     `https://wa.me/?text=${encodeURIComponent(lastShareSummary.socialText)}`,
   );
 }
-async function copyShareText() {
+async function copyShareLink() {
   if (!lastShareSummary?.hasData) {
     return;
   }
+  const button = $("shareCopy");
   try {
-    await navigator.clipboard.writeText(lastShareSummary.preview);
+    // The address bar holds the last search with its filters (see syncUrlWithFilters).
+    await navigator.clipboard.writeText(window.location.href);
+    button.innerHTML = '<i class="bi bi-check2 me-2"></i>Lien copié';
     setState(
       "success",
-      "Résumé copié",
-      "Le résumé des résultats a été copié dans le presse-papiers.",
+      "Lien copié",
+      "Le lien vers cette recherche, filtres compris, a été copié dans le presse-papiers.",
       "clipboard-check",
     );
   } catch (error) {
     console.error(error);
+    button.innerHTML = '<i class="bi bi-x-circle me-2"></i>Copie impossible';
     setState(
       "error",
       "Copie impossible",
-      "Le navigateur a refusé la copie. Essayez l’email ou un réseau social.",
+      "Le navigateur a refusé la copie. Copiez l’adresse de la page : elle contient vos filtres.",
       "clipboard-x",
     );
   }
+  setTimeout(() => {
+    button.innerHTML = '<i class="bi bi-link-45deg me-2"></i>Copier le lien';
+  }, CONFIG.COPY_FEEDBACK_DELAY);
 }
