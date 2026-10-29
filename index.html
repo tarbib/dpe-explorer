@@ -7,7 +7,7 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; font-src 'self' https://cdn.jsdelivr.net; img-src 'self' data: https://data.geopf.fr; connect-src 'self' https://data.ademe.fr https://api-adresse.data.gouv.fr; base-uri 'self'; form-action 'self'; object-src 'none';"
     />
-    <title>Observatoire DPE - Signaux vendeurs</title>
+    <title>DPE Explorer</title>
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
@@ -17,7 +17,7 @@
     />
     <link rel="canonical" href="https://dpe.thomas-arbib.com/" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Observatoire DPE - Signaux vendeurs" />
+    <meta property="og:title" content="DPE Explorer" />
     <meta
       property="og:description"
       content="Repérez les biens ayant récemment établi un DPE pour identifier plus tôt des opportunités potentielles de mise en vente, à partir des données publiques ADEME."
@@ -25,7 +25,7 @@
     <meta property="og:url" content="https://dpe.thomas-arbib.com/" />
     <meta property="og:locale" content="fr_FR" />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Observatoire DPE - Signaux vendeurs" />
+    <meta name="twitter:title" content="DPE Explorer" />
     <meta
       name="twitter:description"
       content="Repérez les biens ayant récemment établi un DPE pour identifier plus tôt des opportunités potentielles de mise en vente, à partir des données publiques ADEME."
@@ -34,7 +34,7 @@
       {
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
-        "name": "Observatoire DPE",
+        "name": "DPE Explorer",
         "url": "https://dpe.thomas-arbib.com/",
         "description": "Repérez les biens ayant récemment établi un DPE pour identifier plus tôt des opportunités potentielles de mise en vente, à partir des données publiques ADEME.",
         "applicationCategory": "BusinessApplication",
@@ -80,12 +80,10 @@
             <i class="bi bi-building-check fs-3"></i>
           </div>
           <div>
-            <p class="eyebrow">Donn&eacute;es ADEME</p>
-            <h1>Observatoire DPE</h1>
+            <h1>DPE Explorer</h1>
             <p class="lede">
-              Rep&eacute;rez les biens ayant r&eacute;cemment &eacute;tabli un
-              DPE pour identifier plus t&ocirc;t des opportunit&eacute;s
-              potentielles de mise en vente.
+              Les DPE r&eacute;cemment &eacute;tablis, par code postal, en
+              liste ou sur carte.
             </p>
           </div>
         </div>
@@ -514,38 +512,32 @@
 
       <footer class="panel site-footer">
         <div class="footer-copy">
-          <p class="footer-title">
-            Détectez plus vite les signaux vendeurs et transformez les nouveaux
-            DPE en opportunités concrètes.
-          </p>
-          <p class="muted">
-            Les résultats sont alimentés par les données publiques ADEME
-            exposées via l’API DPE logements, pour une prospection plus rapide,
-            plus ciblée et plus exploitable.
-          </p>
           <div class="footer-links">
-            <a
-              href="https://www.data.gouv.fr/dataservices/api-dpe-logements"
-              target="_blank"
-              rel="noreferrer noopener"
-              >Source ADEME via l’API DPE logements</a
+            <span
+              >Données :
+              <a
+                href="https://www.data.gouv.fr/dataservices/api-dpe-logements"
+                target="_blank"
+                rel="noreferrer noopener"
+                >API DPE logements (ADEME)</a
+              ></span
             >
             <span
-              >© 2026 Thomas Arbib,
+              >© 2026
               <a
                 href="https://github.com/tarbib"
                 target="_blank"
                 rel="noreferrer noopener"
-                >github.com/tarbib</a
+                >Thomas Arbib</a
               ></span
             >
             <span
-              >Améliorations et corrections Félix Couprie,
+              >Contributions :
               <a
                 href="https://github.com/felix-couprie"
                 target="_blank"
                 rel="noreferrer noopener"
-                >github.com/felix-couprie</a
+                >Félix Couprie</a
               ></span
             >
           </div>

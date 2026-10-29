@@ -55,7 +55,7 @@ function buildShareSummary() {
   const short = `${intro}. ${statsLine}${firstSharedLink ? ` Carte : ${firstSharedLink}.` : ""}`;
   const url = activeShareUrl();
   return {
-    subject: `Observatoire DPE - ${intro}`,
+    subject: `DPE Explorer - ${intro}`,
     preview,
     emailBody: `Bonjour,\n\n${preview}${url ? `\n\nLien : ${url}` : ""}\n`,
     socialText: `${short}${allLines[0] ? ` Exemple : ${allLines[0]}.` : ""}${url ? ` ${url}` : ""}`,

@@ -1,4 +1,4 @@
-# Observatoire DPE — Veille immobilière
+# DPE Explorer
 
 ## Fonctionnalités
 - Filtrage des DPE par code postal (un ou plusieurs), type de bâtiment, classe DPE, période d’établissement et surface habitable.
