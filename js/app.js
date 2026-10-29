@@ -139,15 +139,11 @@ const App = {
       return;
     }
     App.selectRow(id);
+    pendingMapFocus = id;
     const mapTrigger = document.querySelector(
       '[data-bs-target="#mapView"]',
     );
     bootstrap.Tab.getOrCreateInstance(mapTrigger).show();
-    const marker = markerIndex.get(id);
-    if (marker) {
-      map.setView(marker.getLatLng(), CONFIG.MAP_ZOOM_FOCUS);
-      marker.openPopup();
-    }
   },
 };
 function bindSearchEvents() {
@@ -201,7 +197,7 @@ function bindUIEvents() {
             );
           });
         if (event.target.dataset.bsTarget === "#mapView") {
-          setTimeout(() => map.invalidateSize(), CONFIG.MAP_INVALIDATE_DELAY);
+          setTimeout(refreshMapView, CONFIG.MAP_INVALIDATE_DELAY);
         }
       });
     });

@@ -3,16 +3,11 @@ function initMap() {
     fullscreenControl: true,
     zoomControl: true,
   }).setView(CONFIG.MAP_CENTER, CONFIG.MAP_ZOOM_DEFAULT);
-  lightTileLayer = L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    { attribution: "&copy; OpenStreetMap contributors" },
-  );
-  darkTileLayer = L.tileLayer(
-    "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-    { attribution: "&copy; OpenStreetMap contributors &copy; CARTO" },
-  );
-  markers = L.layerGroup().addTo(map);
-  syncMapTiles();
+  L.tileLayer(
+    "https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&STYLE=normal&TILEMATRIXSET=PM_0_19&FORMAT=image/png&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}",
+    { attribution: "&copy; IGN", maxZoom: 19 },
+  ).addTo(map);
+  markers = L.featureGroup().addTo(map);
 }
 function popupContent(item) {
   const rows = FIELDS.map((field) => {
@@ -34,7 +29,6 @@ function markerIconName(type) {
 function renderMarkers() {
   markers.clearLayers();
   markerIndex = new Map();
-  const bounds = [];
   let geocoded = 0;
   appData.forEach((item) => {
     if (!item._geopoint) {
@@ -62,13 +56,28 @@ function renderMarkers() {
     marker.on("click", () => App.selectRow(marker.did, false));
     marker.addTo(markers);
     markerIndex.set(marker.did, marker);
-    bounds.push([lat, lng]);
     geocoded += 1;
   });
-  if (bounds.length) {
+  fitMarkers();
+  return geocoded;
+}
+function fitMarkers() {
+  const bounds = markers.getBounds();
+  if (bounds.isValid()) {
     map.fitBounds(bounds, { padding: CONFIG.BOUNDS_PADDING });
   } else {
     map.setView(CONFIG.MAP_CENTER, CONFIG.MAP_ZOOM_DEFAULT);
   }
-  return geocoded;
+}
+// Leaflet cannot size or fit a hidden map, so the view is set once the tab is shown.
+function refreshMapView() {
+  map.invalidateSize();
+  const marker = markerIndex.get(pendingMapFocus);
+  pendingMapFocus = null;
+  if (marker) {
+    map.setView(marker.getLatLng(), CONFIG.MAP_ZOOM_FOCUS);
+    marker.openPopup();
+  } else {
+    fitMarkers();
+  }
 }

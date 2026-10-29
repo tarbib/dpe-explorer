@@ -32,22 +32,6 @@ function applyTheme(mode, persist = true) {
     button.classList.toggle("active", active);
     button.setAttribute("aria-pressed", String(active));
   });
-  syncMapTiles();
-}
-function syncMapTiles() {
-  if (!map || !lightTileLayer || !darkTileLayer) {
-    return;
-  }
-  const wantedLayer =
-    resolvedTheme() === "dark" ? darkTileLayer : lightTileLayer;
-  if (activeTileLayer === wantedLayer) {
-    return;
-  }
-  if (activeTileLayer) {
-    map.removeLayer(activeTileLayer);
-  }
-  wantedLayer.addTo(map);
-  activeTileLayer = wantedLayer;
 }
 function initTheme() {
   document.querySelectorAll("[data-theme-mode]").forEach((button) => {
